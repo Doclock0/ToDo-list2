@@ -9,78 +9,142 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+    @StateObject private var viewModel = TaskListViewModel()
+    @State private var newTaskTitle = ""
+    @State private var showAddTaskView = false
+    
     var body: some View {
         NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
+            
+            VStack {
+                // Поиск
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    TextField("Search", text: $newTaskTitle)
                 }
-                .onDelete(perform: deleteItems)
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
+                
+                // Список задач
+                List {
+                    ForEach(viewModel.tasks) { task in
+                        HStack(alignment: .top) {
+                            // Чекбокс
+                            Circle()
+                                .fill(task.isCompleted ? Color.yellow : Color.clear)
+                                .frame(width: 20, height: 20)
+                                .overlay(Circle().stroke(Color.gray, lineWidth: 2))
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(task.title)
+                                    .font(.headline)
+                                    .foregroundColor(task.isCompleted ? Color.gray : Color.white)
+                                    .strikethrough(task.isCompleted)
+                                
+                                if !task.description.isEmpty {
+                                    Text(task.description)
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                        .lineLimit(2)
+                                }
+                                
+                                if !task.date.isEmpty {
+                                    Text(task.date)
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                            .padding(.leading, 8)
+                        }
+                        .padding(.vertical, 4)
+                        .onTapGesture {
+                            viewModel.toggleCompletion(for: task)
+                        }
+                    }
+                    .listRowBackground(Color.black)
+                    .listRowSeparator(.hidden)
+                }
+                .listStyle(PlainListStyle())
+                .background(Color.black.edgesIgnoringSafeArea(.all))
+                .preferredColorScheme(.dark)
+                
+                
+                
+                // Кнопка для добавления новой задачи
+                Button(action: {
+                    showAddTaskView.toggle()
+                }) {
+                    Image(systemName: "plus")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(50)
+                }
+                .sheet(isPresented: $showAddTaskView) {
+                    AddTaskView(tasks: $viewModel.tasks)
+                }
             }
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Задачи")
+                        .foregroundColor(.white)
+                        .fontWeight(.bold)
+                        .padding(.top, 3)
+                        .padding(.leading, 20)
+                        .padding(.bottom, 8)
+                        .font(.system(size: 34, weight: .bold))
+                    
                 }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+            }
+            .background(Color(red: 4/255, green: 4/255, blue: 4/255))
+            
+        }
+    }
+}
+    
+
+
+            struct AddTaskView: View {
+                @Binding var tasks: [Task]
+                @Environment(\.presentationMode) var presentationMode
+                @State private var newTaskTitle = ""
+                @State private var newTaskDescription = ""
+                @State private var newTaskDate = Date()
+                
+                var body: some View {
+                    NavigationView {
+                        Form {
+                            Section(header: Text("Новая задача")) {
+                                TextField("Название задачи", text: $newTaskTitle)
+                                TextField("Описание задачи", text: $newTaskDescription)
+                                DatePicker("Дата", selection: $newTaskDate, displayedComponents: .date)
+                            }
+                        }
+                        .navigationTitle("Добавить задачу")
+                        .navigationBarItems(trailing: Button("Сохранить") {
+                            let newTask = Task(
+                                title: newTaskTitle,
+                                description: newTaskDescription,
+                                date: "\(newTaskDate)",
+                                isCompleted: false
+                            )
+                            tasks.append(newTask)
+                            presentationMode.wrappedValue.dismiss()
+                        })
                     }
                 }
             }
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            
+            struct ContentView_Previews: PreviewProvider {
+                static var previews: some View {
+                    ContentView()
+                }
             }
-        }
-    }
+        
+    
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-}
-
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
-#Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-}

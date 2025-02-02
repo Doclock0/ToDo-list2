@@ -33,6 +33,9 @@ struct ContentView: View {
                                     Circle()
                                         .stroke(task.isCompleted ? Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255) : Color(red: 77 / 255, green: 85 / 255, blue: 94 / 255), lineWidth: 1.5)
                                         .frame(width: 24, height: 24)
+                                        .onTapGesture {
+                                                                                    viewModel.toggleCompletion(for: task)
+                                                                                }
                                     
                                     if task.isCompleted {
                                         Image(systemName: "checkmark")
@@ -63,9 +66,8 @@ struct ContentView: View {
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            .onTapGesture {
-                                viewModel.toggleCompletion(for: task)
-                            }
+                           
+                            
                             
                             Spacer(minLength: 0)
                             // Кастомный разделитель
@@ -77,8 +79,27 @@ struct ContentView: View {
                         }
                         .listRowBackground(Color.black)
                         .padding(.vertical, 4)
+                        .contextMenu {
+                        Button {
+                            // Заглушка
+                        } label: {
+                            Label("Редактировать", systemImage: "pencil")
+                        }
+                        
+                        Button {
+                            // Заглушка
+                        } label: {
+                            Label("Поделиться", systemImage: "square.and.arrow.up")
+                        }
+                        
+                        Button(role: .destructive) {
+                            // Заглушка
+                        } label: {
+                            Label("Удалить", systemImage: "trash")
+                        }
                     }
                 }
+            }
                 .padding(.top, 8)
                 .listStyle(PlainListStyle())
                 
@@ -103,7 +124,7 @@ struct ContentView: View {
                                 .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255))
                         }
                     }
-                    .padding(.trailing, 22) // Добавляет отступ от правого края
+                    .padding(.trailing, 22) 
                 }
                 .frame(height: 49)
                 .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))

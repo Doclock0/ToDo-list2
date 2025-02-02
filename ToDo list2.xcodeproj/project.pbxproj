@@ -15,6 +15,7 @@
 		B77441122D48C370007664D8 /* ToDo_list2.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B77441102D48C370007664D8 /* ToDo_list2.xcdatamodeld */; };
 		B774411B2D48C8C7007664D8 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = B774411A2D48C8C7007664D8 /* Task.swift */; };
 		B774411D2D48C906007664D8 /* TaskListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B774411C2D48C906007664D8 /* TaskListViewModel.swift */; };
+		B774411F2D4FA57C007664D8 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B774411E2D4FA57C007664D8 /* TaskDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		B77441112D48C370007664D8 /* ToDo_list2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ToDo_list2.xcdatamodel; sourceTree = "<group>"; };
 		B774411A2D48C8C7007664D8 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		B774411C2D48C906007664D8 /* TaskListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListViewModel.swift; sourceTree = "<group>"; };
+		B774411E2D4FA57C007664D8 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				B774411A2D48C8C7007664D8 /* Task.swift */,
 				B774411C2D48C906007664D8 /* TaskListViewModel.swift */,
 				B77441072D48C36E007664D8 /* ContentView.swift */,
+				B774411E2D4FA57C007664D8 /* TaskDetailView.swift */,
 				B77441092D48C370007664D8 /* Assets.xcassets */,
 				B774410E2D48C370007664D8 /* Persistence.swift */,
 				B77441102D48C370007664D8 /* ToDo_list2.xcdatamodeld */,
@@ -149,6 +152,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B774411F2D4FA57C007664D8 /* TaskDetailView.swift in Sources */,
 				B774410F2D48C370007664D8 /* Persistence.swift in Sources */,
 				B77441082D48C36E007664D8 /* ContentView.swift in Sources */,
 				B774411B2D48C8C7007664D8 /* Task.swift in Sources */,

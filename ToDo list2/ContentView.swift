@@ -4,29 +4,33 @@ struct ContentView: View {
     @StateObject private var viewModel = TaskListViewModel()
     @State private var newTaskTitle = ""
     @State private var showAddTaskView = false
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Поиск
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
                         .padding(.leading, 10)
-                    TextField("Search", text: $newTaskTitle)
-                    Image(systemName: "mic.fill")
-                        .foregroundColor(.gray)
-                        .padding(.trailing, 10)
+                    TextField("", text: $newTaskTitle, prompt: Text("Search")
+                            .foregroundColor(Color(red: 244 / 255, green: 244 / 255, blue: 244 / 255).opacity(0.5))) // Цвет плейсхолдера
+                            .foregroundColor(Color.white) // Цвет вводимого текста
+                            
+         
                 }
-                .frame(width: 360, height: 36)
-                .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                .frame(height: 36)
+                .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255)) // Фон строки поиска
                 .cornerRadius(8)
-                .padding(.top, 16)
-                .padding(.leading, 6)
+                .padding(.top, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 20)
+                .padding(.trailing, 20)
+               
                 
                 // Список задач
-                List {
-                    ForEach(viewModel.tasks) { task in
+                List(viewModel.tasks) { task in
+                    NavigationLink(value: task) {
                         VStack {
                             HStack(alignment: .top) {
                                 ZStack {
@@ -34,17 +38,18 @@ struct ContentView: View {
                                         .stroke(task.isCompleted ? Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255) : Color(red: 77 / 255, green: 85 / 255, blue: 94 / 255), lineWidth: 1.5)
                                         .frame(width: 24, height: 24)
                                         .onTapGesture {
-                                                                                    viewModel.toggleCompletion(for: task)
-                                                                                }
+                                            viewModel.toggleCompletion(for: task)
+                                        }
                                     
                                     if task.isCompleted {
+                                        
                                         Image(systemName: "checkmark")
                                             .resizable()
                                             .frame(width: 12, height: 9)
-                                            .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255))
+                                            .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255)) // Цвет галочки
                                     }
                                 }
-                                
+                                Spacer()
                                 VStack(alignment: .leading) {
                                     Text(task.title)
                                         .font(.headline)
@@ -66,20 +71,19 @@ struct ContentView: View {
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                           
-                            
-                            
                             Spacer(minLength: 0)
-                            // Кастомный разделитель
                             Rectangle()
                                 .fill(Color(red: 77 / 255, green: 85 / 255, blue: 94 / 255))
                                 .frame(height: 1)
                                 .padding(.horizontal, 0)
                                 .padding(.vertical, 0)
                         }
-                        .listRowBackground(Color.black)
-                        .padding(.vertical, 4)
-                        .contextMenu {
+                 
+                       
+                    }
+                    .listRowBackground(Color.black)
+                    .padding(.vertical, 4)
+                    .contextMenu {
                         Button {
                             // Заглушка
                         } label: {
@@ -99,7 +103,6 @@ struct ContentView: View {
                         }
                     }
                 }
-            }
                 .padding(.top, 8)
                 .listStyle(PlainListStyle())
                 
@@ -110,8 +113,10 @@ struct ContentView: View {
                         Text("\(viewModel.tasks.count) Задач")
                             .foregroundColor(.white)
                             .font(.system(size: 14))
+                            
                         Spacer()
                     }
+                    
 
                     HStack {
                         Spacer()
@@ -121,13 +126,13 @@ struct ContentView: View {
                             Image(systemName: "square.and.pencil")
                                 .resizable()
                                 .frame(width: 22, height: 22)
-                                .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255))
+                                .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255)) //
                         }
                     }
-                    .padding(.trailing, 22) 
+                    .padding(.trailing, 22)
                 }
                 .frame(height: 49)
-                .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255)) // Фон нижней панели
                 .sheet(isPresented: $showAddTaskView) {
                     AddTaskView(tasks: $viewModel.tasks)
                 }
@@ -135,47 +140,57 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Text("Задачи")
-                        .foregroundColor(.white)
+                        .foregroundColor(.white) // Цвет заголовка
                         .fontWeight(.bold)
                         .font(.system(size: 34, weight: .bold))
                         .padding(.top, 3)
-                        .padding(.leading, 20)
+                        
                         .padding(.bottom, 8)
                 }
             }
-            .background(Color.black)
-                        }
-                    }
-                }
+            .background(Color.black) // Цвет фона всего экрана
+            .navigationDestination(for: Task.self) { task in
+                TaskDetailView(task: task) // Навигация для TaskDetailView
+            }
+        }
+    }
+}
 
 struct AddTaskView: View {
     @Binding var tasks: [Task]
     @Environment(\.presentationMode) var presentationMode
-    @State private var newTaskTitle = ""
+    @State private var newTaskTitle = "" // Обязательное поле
     @State private var newTaskDescription = ""
     @State private var newTaskDate = Date()
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Новая задача")) {
-                    TextField("Название задачи", text: $newTaskTitle)
+                    TextField("Название задачи", text: $newTaskTitle) // Поле для ввода названия задачи
                     TextField("Описание задачи", text: $newTaskDescription)
                     DatePicker("Дата", selection: $newTaskDate, displayedComponents: .date)
                 }
             }
             .navigationTitle("Добавить задачу")
-            .navigationBarItems(trailing: Button("Сохранить") {
-                let newTask = Task(
-                    title: newTaskTitle,
-                    description: newTaskDescription,
-                    date: "\(newTaskDate)",
-                    isCompleted: false
-                )
-                tasks.append(newTask)
-                presentationMode.wrappedValue.dismiss()
-            })
-            
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Сохранить") {
+                        let newTask = Task(
+                            title: newTaskTitle,
+                            description: newTaskDescription,
+                            date: "\(newTaskDate)",
+                            isCompleted: false
+                        )
+                        tasks.append(newTask)
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    .disabled(newTaskTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    // 🔑 Отключаем кнопку, если поле пустое (игнорируются пробелы и переносы строк)
+                    .foregroundColor(newTaskTitle.isEmpty ? .gray : .blue)
+                    // Меняем цвет текста кнопки в зависимости от доступности
+                }
+            }
             .background(Color.black)
         }
     }

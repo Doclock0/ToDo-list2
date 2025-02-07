@@ -16,6 +16,7 @@
 		B774411B2D48C8C7007664D8 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = B774411A2D48C8C7007664D8 /* Task.swift */; };
 		B774411D2D48C906007664D8 /* TaskListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B774411C2D48C906007664D8 /* TaskListViewModel.swift */; };
 		B774411F2D4FA57C007664D8 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B774411E2D4FA57C007664D8 /* TaskDetailView.swift */; };
+		B77441212D53CEC1007664D8 /* tesiFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77441202D53CEC1007664D8 /* tesiFile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		B774411A2D48C8C7007664D8 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		B774411C2D48C906007664D8 /* TaskListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListViewModel.swift; sourceTree = "<group>"; };
 		B774411E2D4FA57C007664D8 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
+		B77441202D53CEC1007664D8 /* tesiFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tesiFile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 				B77441052D48C36E007664D8 /* ToDo_list2App.swift */,
 				B774411A2D48C8C7007664D8 /* Task.swift */,
 				B774411C2D48C906007664D8 /* TaskListViewModel.swift */,
+				B77441202D53CEC1007664D8 /* tesiFile.swift */,
 				B77441072D48C36E007664D8 /* ContentView.swift */,
 				B774411E2D4FA57C007664D8 /* TaskDetailView.swift */,
 				B77441092D48C370007664D8 /* Assets.xcassets */,
@@ -158,6 +161,7 @@
 				B774411B2D48C8C7007664D8 /* Task.swift in Sources */,
 				B77441122D48C370007664D8 /* ToDo_list2.xcdatamodeld in Sources */,
 				B77441062D48C36E007664D8 /* ToDo_list2App.swift in Sources */,
+				B77441212D53CEC1007664D8 /* tesiFile.swift in Sources */,
 				B774411D2D48C906007664D8 /* TaskListViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

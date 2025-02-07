@@ -167,8 +167,19 @@ struct AddTaskView: View {
         NavigationStack {
             Form {
                 Section(header: Text("Новая задача")) {
-                    TextField("Название задачи", text: $newTaskTitle) // Поле для ввода названия задачи
+                    TextField("Название задачи", text: $newTaskTitle)
+                        .onChange(of: newTaskTitle) {
+                            if newTaskTitle.count > 100 {
+                                newTaskTitle = String(newTaskTitle.prefix(100))
+                            }
+                        }
                     TextField("Описание задачи", text: $newTaskDescription)
+                        .onChange(of: newTaskDescription) {
+                            if newTaskDescription.count > 900 {
+                                newTaskDescription = String(newTaskDescription.prefix(900))
+                            }
+                        }
+                          
                     DatePicker("Дата", selection: $newTaskDate, displayedComponents: .date)
                 }
             }
@@ -176,25 +187,27 @@ struct AddTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Сохранить") {
-                        let newTask = Task(
-                            title: newTaskTitle,
-                            description: newTaskDescription,
-                            date: "\(newTaskDate)",
-                            isCompleted: false
-                        )
-                        tasks.append(newTask)
-                        presentationMode.wrappedValue.dismiss()
+                                            let dateFormatter = DateFormatter()
+                                            dateFormatter.dateFormat = "dd/MM/yy" // Формат даты
+
+                                            let formattedDate = dateFormatter.string(from: newTaskDate)
+                                            
+                                            let newTask = Task(
+                                                title: newTaskTitle,
+                                                description: newTaskDescription,
+                                                date: formattedDate, // Сохраняем отформатированную дату
+                                                isCompleted: false
+                                            )
+                                            tasks.append(newTask)
+                                            presentationMode.wrappedValue.dismiss()
+                                        }
+                                        .disabled(newTaskTitle.isEmpty) // Блокировка, если поле пустое
+                                    }
+                                }
+                                .background(Color.black)
+                            }
+                        }
                     }
-                    .disabled(newTaskTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    // 🔑 Отключаем кнопку, если поле пустое (игнорируются пробелы и переносы строк)
-                    .foregroundColor(newTaskTitle.isEmpty ? .gray : .blue)
-                    // Меняем цвет текста кнопки в зависимости от доступности
-                }
-            }
-            .background(Color.black)
-        }
-    }
-}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

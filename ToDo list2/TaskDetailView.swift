@@ -8,7 +8,7 @@ struct TaskDetailView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            ScrollView {
+            
                 VStack(alignment: .leading, spacing: 16) {
                     // Название задачи
                     Text(task.title)
@@ -32,7 +32,7 @@ struct TaskDetailView: View {
                                     .padding(.top, 8) // Отступ сверху
                                     .padding(.horizontal, 20) // Отступ слева и справа
                                     .frame(maxWidth: .infinity, alignment: .leading) // Обеспечивает, что VStack растягивается на всю ширину
-                                }
+                                
                             }
         .navigationTitle("Детали") // Заголовок экрана
         .navigationBarTitleDisplayMode(.inline)

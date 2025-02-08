@@ -26,7 +26,7 @@ struct TaskDetailView: View {
                         .font(.body)
                         .foregroundColor(.white)
                         .padding(.top, 8)
-                        .lineLimit(nil) // Убираем ограничение на количество строк, чтобы текст всегда переносился на новые строки
+                        .lineLimit(nil)
                 } else {
                     Text("Описание отсутствует")
                         .font(.body)
@@ -49,16 +49,20 @@ struct TaskDetailView: View {
                     dismiss() // Закрываем экран
                 }) {
                     HStack {
-                        Image(systemName: "chevron.left") // Иконка назад
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold, design: .default)) // Размер 17, вес semibold
                             .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255)) // Цвет иконки
+                    }
                         Text("Назад") // Текст кнопки
-                            .font(.system(size: 17))
+                            .font(.system(size: 22))
                             .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255)) // Цвет текста
                             .padding(.leading, 6)
                     }
-                    .padding(.leading, 6)
+                    .padding(.leading, -16)
                 }
+            
             }
+        
         }
     }
-}
+

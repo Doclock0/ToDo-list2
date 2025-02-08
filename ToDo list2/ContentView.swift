@@ -80,8 +80,29 @@ struct ContentView: View {
                     .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                
                     .listRowSeparator(.hidden)   // Убираем стандартные разделители списка
+                    .contextMenu {
+                                            Button {
+                                                // Заглушка
+                                            } label: {
+                                                Label("Редактировать", systemImage: "pencil")
+                                            }
+                                            
+                                            Button {
+                                                // Заглушка
+                                            } label: {
+                                                Label("Поделиться", systemImage: "square.and.arrow.up")
+                                            }
+                                            
+                                            Button(role: .destructive) {
+                                                // Заглушка
+                                            } label: {
+                                                Label("Удалить", systemImage: "trash")
+                                            }
+                                        }
+                                    
                 }
                 .listStyle(PlainListStyle())
+                
                 
                 
                 // Footer

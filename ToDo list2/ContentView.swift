@@ -4,7 +4,7 @@ struct ContentView: View {
     @StateObject private var viewModel = TaskListViewModel()
     @State private var newTaskTitle = ""
     @State private var showAddTaskView = false
-
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -14,25 +14,22 @@ struct ContentView: View {
                         .foregroundColor(.gray)
                         .padding(.leading, 10)
                     TextField("", text: $newTaskTitle, prompt: Text("Search")
-                            .foregroundColor(Color(red: 244 / 255, green: 244 / 255, blue: 244 / 255).opacity(0.5))) // Цвет плейсхолдера
-                            .foregroundColor(Color.white) // Цвет вводимого текста
-                            
-         
+                        .foregroundColor(Color(red: 244 / 255, green: 244 / 255, blue: 244 / 255).opacity(0.5))) // Цвет плейсхолдера
+                        .foregroundColor(Color.white) // Цвет вводимого текста
                 }
                 .frame(height: 36)
                 .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255)) // Фон строки поиска
                 .cornerRadius(8)
                 .padding(.top, 10)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
                 .padding(.leading, 20)
                 .padding(.trailing, 20)
-               
                 
                 // Список задач
                 List(viewModel.tasks) { task in
                     NavigationLink(value: task) {
-                        VStack {
-                            HStack(alignment: .top) {
+                        VStack(spacing: 0) { // Убираем лишние отступы между элементами
+                            HStack(alignment: .top, spacing: 12) { // Добавим небольшой отступ между кружком и текстом
                                 ZStack {
                                     Circle()
                                         .stroke(task.isCompleted ? Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255) : Color(red: 77 / 255, green: 85 / 255, blue: 94 / 255), lineWidth: 1.5)
@@ -42,23 +39,24 @@ struct ContentView: View {
                                         }
                                     
                                     if task.isCompleted {
-                                        
                                         Image(systemName: "checkmark")
                                             .resizable()
                                             .frame(width: 12, height: 9)
                                             .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255)) // Цвет галочки
                                     }
                                 }
-                                Spacer()
-                                VStack(alignment: .leading) {
+                                
+                                VStack(alignment: .leading, spacing: 4) {
                                     Text(task.title)
                                         .font(.headline)
+                                        .font(.system(size: 16))
                                         .foregroundColor(task.isCompleted ? Color.gray : Color.white)
                                         .strikethrough(task.isCompleted)
                                     
-                                    if !task.description.isEmpty {
-                                        Text(task.description)
+                                    if let description = task.description, !description.isEmpty {
+                                        Text(description)
                                             .font(.subheadline)
+                                            .font(.system(size: 12))
                                             .foregroundColor(task.isCompleted ? Color.gray : Color.white)
                                             .lineLimit(2)
                                     }
@@ -71,40 +69,20 @@ struct ContentView: View {
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            Spacer(minLength: 0)
+                            .padding(.vertical, 12) // Одинаковый отступ сверху и снизу
+
                             Rectangle()
                                 .fill(Color(red: 77 / 255, green: 85 / 255, blue: 94 / 255))
-                                .frame(height: 1)
-                                .padding(.horizontal, 0)
-                                .padding(.vertical, 0)
+                                .frame(height: 0.5) // Тоньше для визуального баланса
                         }
-                 
-                       
                     }
                     .listRowBackground(Color.black)
-                    .padding(.vertical, 4)
-                    .contextMenu {
-                        Button {
-                            // Заглушка
-                        } label: {
-                            Label("Редактировать", systemImage: "pencil")
-                        }
-                        
-                        Button {
-                            // Заглушка
-                        } label: {
-                            Label("Поделиться", systemImage: "square.and.arrow.up")
-                        }
-                        
-                        Button(role: .destructive) {
-                            // Заглушка
-                        } label: {
-                            Label("Удалить", systemImage: "trash")
-                        }
-                    }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+               
+                    .listRowSeparator(.hidden)   // Убираем стандартные разделители списка
                 }
-                .padding(.top, 8)
                 .listStyle(PlainListStyle())
+                
                 
                 // Footer
                 ZStack {
@@ -113,11 +91,8 @@ struct ContentView: View {
                         Text("\(viewModel.tasks.count) Задач")
                             .foregroundColor(.white)
                             .font(.system(size: 14))
-                            
                         Spacer()
                     }
-                    
-
                     HStack {
                         Spacer()
                         Button(action: {
@@ -144,7 +119,6 @@ struct ContentView: View {
                         .fontWeight(.bold)
                         .font(.system(size: 34, weight: .bold))
                         .padding(.top, 3)
-                        
                         .padding(.bottom, 8)
                 }
             }
@@ -173,13 +147,14 @@ struct AddTaskView: View {
                                 newTaskTitle = String(newTaskTitle.prefix(100))
                             }
                         }
+                    
                     TextField("Описание задачи", text: $newTaskDescription)
                         .onChange(of: newTaskDescription) {
                             if newTaskDescription.count > 900 {
                                 newTaskDescription = String(newTaskDescription.prefix(900))
                             }
                         }
-                          
+                    
                     DatePicker("Дата", selection: $newTaskDate, displayedComponents: .date)
                 }
             }
@@ -187,27 +162,27 @@ struct AddTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Сохранить") {
-                                            let dateFormatter = DateFormatter()
-                                            dateFormatter.dateFormat = "dd/MM/yy" // Формат даты
-
-                                            let formattedDate = dateFormatter.string(from: newTaskDate)
-                                            
-                                            let newTask = Task(
-                                                title: newTaskTitle,
-                                                description: newTaskDescription,
-                                                date: formattedDate, // Сохраняем отформатированную дату
-                                                isCompleted: false
-                                            )
-                                            tasks.append(newTask)
-                                            presentationMode.wrappedValue.dismiss()
-                                        }
-                                        .disabled(newTaskTitle.isEmpty) // Блокировка, если поле пустое
-                                    }
-                                }
-                                .background(Color.black)
-                            }
-                        }
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "dd/MM/yy" // Формат даты
+                        let formattedDate = dateFormatter.string(from: newTaskDate)
+                        
+                        let newTask = Task(
+                            id: tasks.count + 1, // Простое присвоение ID
+                            title: newTaskTitle,
+                            description: newTaskDescription,
+                            date: formattedDate,
+                            isCompleted: false
+                        )
+                        tasks.append(newTask)
+                        presentationMode.wrappedValue.dismiss()
                     }
+                    .disabled(newTaskTitle.isEmpty) // Блокировка, если поле пустое
+                }
+            }
+            .background(Color.black)
+        }
+    }
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

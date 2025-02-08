@@ -1,21 +1,40 @@
-//
-//  TaskListViewModel.swift
-//  ToDo list2
-//
-//  Created by Виктория Струсь on 28.01.2025.
-//
-
 import Foundation
-import SwiftUI
+import Combine
 
 class TaskListViewModel: ObservableObject {
-    @Published var tasks: [Task] = [
-        Task(title: "Почитать книгу", description: "Составить список необходимых продуктов для ужина. Не забывать проверить, что уже есть в холодильнике.", date: "09/10/24", isCompleted: true),
-        Task(title: "Уборка в квартире", description: "Провести генеральную уборку в квартире", date: "02/10/24", isCompleted: false),
-        Task(title: "Заняться спортом", description: "Сходить в спортзал или сделать тренировку дома. Не забывать про разминку и растяжку!", date: "02/10/24", isCompleted: false),
-        Task(title: "Работа над проектом", description: "Выделить время для работы над проектом на работе. Сфокусироваться на выполнении важных задач.", date: "09/10/24", isCompleted: true),
-        Task(title: "Вечерний отдых", description: "Найти время для расслабления перед сном: посмотреть фильм или послушать музыку.", date: "02/10/24", isCompleted: false)
-    ]
+    @Published var tasks: [Task] = []
+    
+    init() {
+        loadTasks()
+    }
+    
+    func loadTasks() {
+        guard let url = URL(string: "https://dummyjson.com/todos") else {
+            print("❌ Неверный URL")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("❌ Ошибка сети: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("❌ Нет данных от API")
+                return
+            }
+            
+            do {
+                let todoResponse = try JSONDecoder().decode(TodoResponse.self, from: data)
+                DispatchQueue.main.async {
+                    self.tasks = todoResponse.todos
+                }
+            } catch {
+                print("❌ Ошибка декодирования: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
     
     func addTask(_ task: Task) {
         tasks.append(task)

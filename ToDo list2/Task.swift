@@ -4,14 +4,22 @@
 //
 //  Created by Виктория Струсь on 28.01.2025.
 //
-
 import Foundation
-import SwiftUI
 
-struct Task: Identifiable, Hashable {
-    let id = UUID()
+struct Task: Identifiable, Decodable, Hashable {
+    var id: Int
     var title: String
-    var description: String
-    var date: String
+    var description: String?
+    var date: String = ""
     var isCompleted: Bool
+    
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title = "todo"
+        case isCompleted = "completed"
+    }
+}
+
+struct TodoResponse: Decodable {
+    var todos: [Task]
 }

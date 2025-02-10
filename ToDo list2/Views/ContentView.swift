@@ -130,7 +130,7 @@ struct ContentView: View {
                 .frame(height: 49)
                 .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255)) // Фон нижней панели
                 .sheet(isPresented: $showAddTaskView) {
-                    AddTaskView(tasks: $viewModel.tasks)
+                    AddTaskView(viewModel: viewModel)
                 }
             }
             .toolbar {
@@ -151,59 +151,9 @@ struct ContentView: View {
     }
 }
 
-struct AddTaskView: View {
-    @Binding var tasks: [Task]
-    @Environment(\.presentationMode) var presentationMode
-    @State private var newTaskTitle = "" // Обязательное поле
-    @State private var newTaskDescription = ""
-    @State private var newTaskDate = Date()
-    
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("Новая задача")) {
-                    TextField("Название задачи", text: $newTaskTitle)
-                        .onChange(of: newTaskTitle) {
-                            if newTaskTitle.count > 100 {
-                                newTaskTitle = String(newTaskTitle.prefix(100))
-                            }
-                        }
-                    
-                    TextField("Описание задачи", text: $newTaskDescription)
-                        .onChange(of: newTaskDescription) {
-                            if newTaskDescription.count > 900 {
-                                newTaskDescription = String(newTaskDescription.prefix(900))
-                            }
-                        }
-                    
-                    DatePicker("Дата", selection: $newTaskDate, displayedComponents: .date)
-                }
-            }
-            .navigationTitle("Добавить задачу")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Сохранить") {
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.dateFormat = "dd/MM/yy" // Формат даты
-                        let formattedDate = dateFormatter.string(from: newTaskDate)
-                        
-                        let newTask = Task(
-                            id: tasks.count + 1, // Простое присвоение ID
-                            title: newTaskTitle,
-                            description: newTaskDescription,
-                            date: formattedDate,
-                            isCompleted: false
-                        )
-                        tasks.append(newTask)
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                    .disabled(newTaskTitle.isEmpty) // Блокировка, если поле пустое
-                }
-            }
-            .background(Color.black)
-        }
-    }
-}
+
+
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

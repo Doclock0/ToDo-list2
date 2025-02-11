@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TaskDetailView: View {
-    let task: Task
+    let task: TaskEntity
     @Environment(\.dismiss) private var dismiss // Для возврата назад
     
     var body: some View {
@@ -10,18 +10,18 @@ struct TaskDetailView: View {
             
             VStack(alignment: .leading, spacing: 16) {
                 // Название задачи
-                Text(task.title)
+                Text(task.title ?? "Без названия")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                 
                 // Дата
-                Text(task.date)
+                Text(task.date ?? "Без даты")
                     .font(.caption)
                     .foregroundColor(.gray)
                 
                 // Описание
-                if let description = task.description, !description.isEmpty {
+                if let description = task.descriptionText, !description.isEmpty {
                     Text(description)
                         .font(.body)
                         .foregroundColor(.white)

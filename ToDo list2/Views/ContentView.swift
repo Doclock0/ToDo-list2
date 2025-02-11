@@ -4,6 +4,8 @@ struct ContentView: View {
     @StateObject private var viewModel = TaskListViewModel()
     @State private var newTaskTitle = ""
     @State private var showAddTaskView = false
+    @State private var selectedTask: TaskEntity?
+    @State private var isEditing = false
     
     var body: some View {
         NavigationStack {
@@ -28,8 +30,8 @@ struct ContentView: View {
                 // Список задач
                 List(viewModel.tasks) { task in
                     NavigationLink(value: task) {
-                        VStack(spacing: 0) { // Убираем лишние отступы между элементами
-                            HStack(alignment: .top, spacing: 12) { // Добавим небольшой отступ между кружком и текстом
+                        VStack(spacing: 0) {
+                            HStack(alignment: .top, spacing: 12) {
                                 ZStack {
                                     Circle()
                                         .stroke(task.isCompleted ? Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255) : Color(red: 77 / 255, green: 85 / 255, blue: 94 / 255), lineWidth: 1.5)
@@ -47,25 +49,26 @@ struct ContentView: View {
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(task.title)
+                                    Text(task.title ?? "")
+                                        .font(.headline)
+                                        .strikethrough(task.isCompleted)
                                         .font(.headline)
                                         .font(.system(size: 16))
                                         .foregroundColor(task.isCompleted ? Color.gray : Color.white)
                                         .strikethrough(task.isCompleted)
                                     
-                                    if let description = task.description, !description.isEmpty {
-                                        Text(description)
+                                    
+                                    
+                                    Text(task.descriptionText ?? "")
                                             .font(.subheadline)
                                             .font(.system(size: 12))
                                             .foregroundColor(task.isCompleted ? Color.gray : Color.white)
                                             .lineLimit(2)
-                                    }
                                     
-                                    if !task.date.isEmpty {
-                                        Text(task.date)
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
+                                    
+                                    Text(task.date?.isEmpty == false ? task.date ?? "" : "")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
@@ -75,14 +78,15 @@ struct ContentView: View {
                                 .fill(Color(red: 77 / 255, green: 85 / 255, blue: 94 / 255))
                                 .frame(height: 0.5) // Тоньше для визуального баланса
                         }
+                        
                     }
                     .listRowBackground(Color.black)
                     .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                
                     .listRowSeparator(.hidden)   // Убираем стандартные разделители списка
                     .contextMenu {
-                                            Button {
-                                                // Заглушка
+                                        Button {
+                                                selectedTask = task // Выбираем задачу
                                             } label: {
                                                 Label("Редактировать", systemImage: "pencil")
                                             }
@@ -133,6 +137,10 @@ struct ContentView: View {
                     AddTaskView(viewModel: viewModel)
                 }
             }
+            .sheet(item: $selectedTask) { task in
+                EditTaskView(viewModel: viewModel, task: task)
+            }
+
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Text("Задачи")
@@ -144,8 +152,8 @@ struct ContentView: View {
                 }
             }
             .background(Color.black) // Цвет фона всего экрана
-            .navigationDestination(for: Task.self) { task in
-                TaskDetailView(task: task) // Навигация для TaskDetailView
+            .navigationDestination(for: TaskEntity.self) { task in // Указываем TaskEntity вместо Task
+                    TaskDetailView(task: task) // Передаем TaskEntity в TaskDetailView
             }
         }
     }

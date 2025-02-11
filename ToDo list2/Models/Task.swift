@@ -9,7 +9,7 @@ import Foundation
 struct Task: Identifiable, Decodable, Hashable {
     var id: Int
     var title: String
-    var description: String?
+    var descriptionText: String?
     var date: String = ""
     var isCompleted: Bool
     

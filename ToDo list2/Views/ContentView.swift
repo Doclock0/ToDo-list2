@@ -29,7 +29,7 @@ struct ContentView: View {
                 List {
                     ForEach(viewModel.tasks.indices, id: \.self) { index in
                         let task = viewModel.tasks[index]
-                        NavigationLink(value: task) {
+                        NavigationLink(value: task) { // Переход на детали задачи
                             VStack(spacing: 0) {
                                 HStack(alignment: .top, spacing: 12) {
                                     ZStack {
@@ -77,7 +77,7 @@ struct ContentView: View {
                                     .fill(Color.gray)
                                     .frame(height: 0.5)
                             }
-                            .transition(.opacity) // Плавное исчезновение
+                            .transition(.opacity)
                         }
                         .listRowBackground(Color.black)
                         .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
@@ -100,7 +100,7 @@ struct ContentView: View {
                             }
                         }
                     }
-                    .animation(.easeInOut, value: viewModel.tasks) // Анимация для ForEach
+                    .animation(.easeInOut, value: viewModel.tasks)
                 }
                 .listStyle(PlainListStyle())
 
@@ -146,6 +146,9 @@ struct ContentView: View {
                 }
             }
             .background(Color.black)
+            .navigationDestination(for: TaskEntity.self) { task in
+                TaskDetailView(task: task)
+            }
         }
     }
 }

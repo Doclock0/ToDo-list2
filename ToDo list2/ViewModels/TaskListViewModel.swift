@@ -104,6 +104,7 @@ class TaskListViewModel: ObservableObject {
         task.isCompleted.toggle()
         do {
             try context.save()
+            loadTasks() // Добавлено для обновления списка после изменения статуса
         } catch {
             print("Ошибка при обновлении задачи: \(error.localizedDescription)")
         }

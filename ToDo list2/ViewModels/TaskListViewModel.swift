@@ -1,8 +1,8 @@
 import Foundation
 import CoreData
+import SwiftUI
 
 class TaskListViewModel: ObservableObject {
-    private var nextId: Int = 1
     @Published var tasks: [TaskEntity] = []
     private let context: NSManagedObjectContext
 
@@ -15,7 +15,6 @@ class TaskListViewModel: ObservableObject {
         }
     }
     
-    // Проверка первого запуска
     private func isFirstLaunch() -> Bool {
         let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
         if !hasLaunchedBefore {
@@ -25,11 +24,8 @@ class TaskListViewModel: ObservableObject {
         return false
     }
     
-    // Загрузка задач из CoreData
     func loadTasks() {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        
-        // Добавляем сортировку по id по возрастанию
         let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
         request.sortDescriptors = [sortDescriptor]
         
@@ -40,7 +36,6 @@ class TaskListViewModel: ObservableObject {
         }
     }
     
-    // Загрузка задач из API только при первом запуске
     func loadTasksFromAPI() {
         guard let url = URL(string: "https://dummyjson.com/todos") else {
             print("Неверный URL")
@@ -69,7 +64,6 @@ class TaskListViewModel: ObservableObject {
         }.resume()
     }
     
-    // Сохранение загруженных задач в CoreData
     private func saveTasksFromAPI(todos: [Task]) {
         for todo in todos {
             let newTask = TaskEntity(context: context)
@@ -82,13 +76,12 @@ class TaskListViewModel: ObservableObject {
         
         do {
             try context.save()
-            loadTasks() // Обновляем список задач после сохранения
+            loadTasks()
         } catch {
             print("Ошибка сохранения задач в CoreData: \(error.localizedDescription)")
         }
     }
     
-    // Добавление новой задачи
     func addTask(title: String, description: String, date: String) {
         let newTask = TaskEntity(context: context)
         newTask.id = Int64(Date().timeIntervalSince1970)
@@ -99,15 +92,43 @@ class TaskListViewModel: ObservableObject {
 
         do {
             try context.save()
-            loadTasks()
+            withAnimation {
+                tasks.append(newTask)
+            }
         } catch {
             print("Ошибка при сохранении задачи: \(error.localizedDescription)")
         }
     }
     
-    // Переключение статуса выполнения задачи
     func toggleCompletion(for task: TaskEntity) {
         task.isCompleted.toggle()
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка при обновлении задачи: \(error.localizedDescription)")
+        }
+    }
+    
+    func deleteTask(at offsets: IndexSet) {
+        offsets.forEach { index in
+            let task = tasks[index]
+            context.delete(task)
+        }
+        withAnimation {
+            tasks.remove(atOffsets: offsets)
+        }
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка при удалении задачи: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateTask(task: TaskEntity, newTitle: String, newDescription: String, newDate: Date) {
+        task.title = newTitle
+        task.descriptionText = newDescription
+        task.date = DateFormatter.localizedString(from: newDate, dateStyle: .short, timeStyle: .short)
+        
         do {
             try context.save()
             loadTasks()
@@ -115,29 +136,4 @@ class TaskListViewModel: ObservableObject {
             print("Ошибка при обновлении задачи: \(error.localizedDescription)")
         }
     }
-    
-    // Удаление задачи
-    func deleteTask(at offsets: IndexSet) {
-        offsets.forEach { index in
-            let task = tasks[index]
-            context.delete(task)
-        }
-        do {
-            try context.save()
-            loadTasks()
-        } catch {
-            print("Ошибка при удалении задачи: \(error.localizedDescription)")
-        }
-    }
-    
-    func updateTask(task: TaskEntity, newTitle: String, newDescription: String, newDate: Date) {
-        TaskCoreDataManager.shared.updateTask(
-            task: task,
-            newTitle: newTitle,
-            newDescription: newDescription,
-            newDate: newDate
-        )
-        loadTasks() // Обновляем данные для UI
-    }
-    
 }

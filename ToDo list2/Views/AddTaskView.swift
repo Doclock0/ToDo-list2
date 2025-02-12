@@ -1,11 +1,3 @@
-//
-//  AddTaskView.swift
-//  ToDo list2
-//
-//  Created by Виктория Струсь on 11.02.2025.
-//
-
-import Foundation
 import SwiftUI
 
 struct AddTaskView: View {
@@ -19,20 +11,23 @@ struct AddTaskView: View {
         NavigationStack {
             Form {
                 Section(header: Text("Новая задача")) {
+                    // Поле для названия задачи
                     TextField("Название задачи", text: $newTaskTitle)
-                        .onChange(of: newTaskTitle) {
-                            if newTaskTitle.count > 100 {
-                                newTaskTitle = String(newTaskTitle.prefix(100))
+                        .onChange(of: newTaskTitle) { oldValue, newValue in
+                            if newValue.count > 100 {
+                                newTaskTitle = String(newValue.prefix(100))
                             }
                         }
                     
+                    // Поле для описания задачи
                     TextField("Описание задачи", text: $newTaskDescription)
-                        .onChange(of: newTaskDescription) {
-                            if newTaskDescription.count > 900 {
-                                newTaskDescription = String(newTaskDescription.prefix(900))
+                        .onChange(of: newTaskDescription) { oldValue, newValue in
+                            if newValue.count > 900 {
+                                newTaskDescription = String(newValue.prefix(900))
                             }
                         }
                     
+                    // Выбор даты
                     DatePicker("Дата", selection: $newTaskDate, displayedComponents: .date)
                 }
             }
@@ -44,18 +39,18 @@ struct AddTaskView: View {
                         dateFormatter.dateFormat = "dd/MM/yy"
                         let formattedDate = dateFormatter.string(from: newTaskDate)
                         
-                        //  Передаём данные в ViewModel
+                        // Передаём пустую строку, если описание не указано
                         viewModel.addTask(
                             title: newTaskTitle,
-                            description: newTaskDescription,
+                            description: newTaskDescription.isEmpty ? "" : newTaskDescription,
                             date: formattedDate
                         )
-                        
                         presentationMode.wrappedValue.dismiss()
                     }
                     .disabled(newTaskTitle.isEmpty)
                 }
             }
+            .ignoresSafeArea(.keyboard) // Игнорируем клавиатуру
         }
     }
 }

@@ -5,6 +5,7 @@ import SwiftUI
 class TaskListViewModel: ObservableObject {
     @Published var tasks: [TaskEntity] = []
     private let context: NSManagedObjectContext
+    @Published var searchText: String = ""
 
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.context = context
@@ -99,6 +100,14 @@ class TaskListViewModel: ObservableObject {
             print("Ошибка при сохранении задачи: \(error.localizedDescription)")
         }
     }
+    
+    var filteredTasks: [TaskEntity] {
+            if searchText.isEmpty {
+                return tasks
+            } else {
+                return tasks.filter { $0.title?.localizedCaseInsensitiveContains(searchText) == true }
+            }
+        }
     
     func toggleCompletion(for task: TaskEntity) {
         task.isCompleted.toggle()

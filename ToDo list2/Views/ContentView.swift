@@ -94,9 +94,7 @@ struct ContentView: View {
 
                                 Button(role: .destructive) {
                                     withAnimation(.easeInOut(duration: 0.3)) {
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                            viewModel.deleteTask(at: IndexSet(integer: index))
-                                        }
+                                        viewModel.deleteTask(at: IndexSet(integer: index))
                                     }
                                 } label: {
                                     Label("Удалить", systemImage: "trash")

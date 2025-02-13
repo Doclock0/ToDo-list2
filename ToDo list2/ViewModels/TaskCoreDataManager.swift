@@ -1,34 +1,35 @@
-//
-//  TaskCoreDataManager.swift
-//  ToDo list2
-//
-//  Created by Виктория Струсь on 11.02.2025.
-//
-
 import CoreData
 import Foundation
 
 class TaskCoreDataManager {
     static let shared = TaskCoreDataManager()
-    let context: NSManagedObjectContext
+    let context: NSManagedObjectContext // Основной контекст для чтения данных
+    let backgroundContext: NSManagedObjectContext // Фоновый контекст для записи
 
     private init() {
         context = PersistenceController.shared.container.viewContext
+        backgroundContext = PersistenceController.shared.backgroundContext // фоновый контекст из PersistenceController
     }
 
     // Сохранение задачи
     func saveTask(id: Int, title: String, description: String?, date: String, isCompleted: Bool) {
-        let taskEntity = TaskEntity(context: context)
-        taskEntity.id = Int64(id)
-        taskEntity.title = title
-        taskEntity.descriptionText = description
-        taskEntity.date = date
-        taskEntity.isCompleted = isCompleted
+        backgroundContext.perform {
+            let taskEntity = TaskEntity(context: self.backgroundContext)
+            taskEntity.id = Int64(id)
+            taskEntity.title = title
+            taskEntity.descriptionText = description
+            taskEntity.date = date
+            taskEntity.isCompleted = isCompleted
 
-        saveContext()
+            do {
+                try self.backgroundContext.save()
+            } catch {
+                print("Ошибка сохранения задачи: \(error)")
+            }
+        }
     }
 
-    // Загрузка всех задач
+    // Загрузка всех задач 
     func fetchTasks() -> [Task] {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
 
@@ -55,16 +56,18 @@ class TaskCoreDataManager {
 
     // Удаление задачи
     func deleteTask(id: Int) {
-        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %d", id)
+        backgroundContext.perform {
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %d", id)
 
-        do {
-            if let entity = try context.fetch(request).first {
-                context.delete(entity)
-                saveContext()
+            do {
+                if let entity = try self.backgroundContext.fetch(request).first {
+                    self.backgroundContext.delete(entity)
+                    try self.backgroundContext.save()
+                }
+            } catch {
+                print("Ошибка удаления задачи: \(error)")
             }
-        } catch {
-            print("Ошибка удаления задачи: \(error)")
         }
     }
 
@@ -78,14 +81,21 @@ class TaskCoreDataManager {
             }
         }
     }
+
     // Изменение задачи
     func updateTask(task: TaskEntity, newTitle: String, newDescription: String, newDate: Date) {
-        task.title = newTitle
-        task.descriptionText = newDescription
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd/MM/yy"
-        task.date = dateFormatter.string(from: newDate)
-        
-        saveContext() // Сохраняем изменения в CoreData
+        backgroundContext.perform {
+            task.title = newTitle
+            task.descriptionText = newDescription
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd/MM/yy"
+            task.date = dateFormatter.string(from: newDate)
+
+            do {
+                try self.backgroundContext.save()
+            } catch {
+                print("Ошибка обновления задачи: \(error)")
+            }
+        }
     }
 }

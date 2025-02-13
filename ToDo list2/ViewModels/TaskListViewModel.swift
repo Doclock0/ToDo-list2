@@ -4,18 +4,27 @@ import SwiftUI
 
 class TaskListViewModel: ObservableObject {
     @Published var tasks: [TaskEntity] = []
+    @Published var filteredTasks: [TaskEntity] = [] // Отфильтрованные задачи
+    @Published var searchText: String = "" {
+        didSet {
+            updateSearchResults() // Вызываем поиск при изменении текста
+        }
+    }
+
     private let context: NSManagedObjectContext
-    @Published var searchText: String = ""
+    private let backgroundContext: NSManagedObjectContext
 
     init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
         self.context = context
+        self.backgroundContext = PersistenceController.shared.backgroundContext
         loadTasks()
 
         if isFirstLaunch() {
             loadTasksFromAPI()
         }
     }
-    
+
+    // Проверка первого запуска
     private func isFirstLaunch() -> Bool {
         let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
         if !hasLaunchedBefore {
@@ -24,36 +33,39 @@ class TaskListViewModel: ObservableObject {
         }
         return false
     }
-    
+
+    // Загрузка задач из CoreData
     func loadTasks() {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
         request.sortDescriptors = [sortDescriptor]
-        
+
         do {
             tasks = try context.fetch(request)
+            filteredTasks = tasks // Инициализируем filteredTasks всеми задачами
         } catch {
             print("Ошибка загрузки задач из Core Data: \(error.localizedDescription)")
         }
     }
-    
+
+    // Загрузка задач из API
     func loadTasksFromAPI() {
         guard let url = URL(string: "https://dummyjson.com/todos") else {
             print("Неверный URL")
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Ошибка сети: \(error.localizedDescription)")
                 return
             }
-            
+
             guard let data = data else {
                 print("Нет данных от API")
                 return
             }
-            
+
             do {
                 let todoResponse = try JSONDecoder().decode(TodoResponse.self, from: data)
                 DispatchQueue.main.async {
@@ -64,86 +76,150 @@ class TaskListViewModel: ObservableObject {
             }
         }.resume()
     }
-    
-    private func saveTasksFromAPI(todos: [Task]) {
-        for todo in todos {
-            let newTask = TaskEntity(context: context)
-            newTask.id = Int64(todo.id)
-            newTask.title = todo.title
-            newTask.descriptionText = todo.descriptionText
-            newTask.date = todo.date
-            newTask.isCompleted = todo.isCompleted
-        }
-        
-        do {
-            try context.save()
-            loadTasks()
-        } catch {
-            print("Ошибка сохранения задач в CoreData: \(error.localizedDescription)")
-        }
-    }
-    
-    func addTask(title: String, description: String, date: String) {
-        let newTask = TaskEntity(context: context)
-        newTask.id = Int64(Date().timeIntervalSince1970)
-        newTask.title = title
-        newTask.descriptionText = description
-        newTask.date = date
-        newTask.isCompleted = false
 
-        do {
-            try context.save()
-            withAnimation {
-                tasks.append(newTask)
+    // Сохранение задач из API в CoreData
+    private func saveTasksFromAPI(todos: [Task]) {
+        backgroundContext.perform {
+            for todo in todos {
+                let newTask = TaskEntity(context: self.backgroundContext)
+                newTask.id = Int64(todo.id)
+                newTask.title = todo.title
+                newTask.descriptionText = todo.descriptionText
+                newTask.date = todo.date
+                newTask.isCompleted = todo.isCompleted
             }
-        } catch {
-            print("Ошибка при сохранении задачи: \(error.localizedDescription)")
+
+            do {
+                try self.backgroundContext.save()
+                DispatchQueue.main.async {
+                    self.loadTasks() // Обновляем список задач на главном потоке
+                }
+            } catch {
+                print("Ошибка сохранения задач в CoreData: \(error.localizedDescription)")
+            }
         }
     }
-    
-    var filteredTasks: [TaskEntity] {
-            if searchText.isEmpty {
-                return tasks
-            } else {
-                return tasks.filter { $0.title?.localizedCaseInsensitiveContains(searchText) == true }
+
+    // Добавление задачи
+    func addTask(title: String, description: String, date: String) {
+        backgroundContext.perform {
+            let newTask = TaskEntity(context: self.backgroundContext)
+            newTask.id = Int64(Date().timeIntervalSince1970)
+            newTask.title = title
+            newTask.descriptionText = description
+            newTask.date = date
+            newTask.isCompleted = false
+
+            do {
+                try self.backgroundContext.save()
+                DispatchQueue.main.async {
+                    withAnimation {
+                        self.tasks.append(newTask)
+                        self.filteredTasks = self.tasks // Обновляем отфильтрованные задачи
+                    }
+                }
+            } catch {
+                print("Ошибка при сохранении задачи: \(error.localizedDescription)")
             }
         }
-    
+    }
+
+    // Поиск задач
+    func searchTasks(with text: String, completion: @escaping ([TaskEntity]) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let filtered = self.tasks.filter { $0.title?.localizedCaseInsensitiveContains(text) == true }
+            DispatchQueue.main.async {
+                completion(filtered)
+            }
+        }
+    }
+
+    // Обновление результатов поиска
+    private func updateSearchResults() {
+        if searchText.isEmpty {
+            filteredTasks = tasks // Если поисковой запрос пуст, показываем все задачи
+        } else {
+            searchTasks(with: searchText) { filtered in
+                self.filteredTasks = filtered
+            }
+        }
+    }
+
+    // Переключение статуса выполнения задачи
     func toggleCompletion(for task: TaskEntity) {
-        task.isCompleted.toggle()
-        do {
-            try context.save()
-            loadTasks() // Добавлено для обновления списка после изменения статуса
-        } catch {
-            print("Ошибка при обновлении задачи: \(error.localizedDescription)")
+        backgroundContext.perform {
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %d", task.id)
+
+            do {
+                if let taskInBackgroundContext = try self.backgroundContext.fetch(request).first {
+                    taskInBackgroundContext.isCompleted.toggle()
+                    try self.backgroundContext.save()
+
+                    DispatchQueue.main.async {
+                        self.loadTasks() // Обновляем список задач на главном потоке
+                    }
+                }
+            } catch {
+                print("Ошибка при обновлении задачи: \(error.localizedDescription)")
+            }
         }
     }
-    
+
+    // Удаление задачи
     func deleteTask(at offsets: IndexSet) {
-        offsets.forEach { index in
-            let task = tasks[index]
-            context.delete(task)
-        }
-        withAnimation {
-            tasks.remove(atOffsets: offsets)
-        }
-        do {
-            try context.save()
-        } catch {
-            print("Ошибка при удалении задачи: \(error.localizedDescription)")
+        backgroundContext.perform {
+            // Получаем ID задачи, которую нужно удалить
+            let taskIDs = offsets.map { self.tasks[$0].id }
+
+            // Загружаем задачу в фоновом контексте
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id IN %@", taskIDs)
+
+            do {
+                let tasksToDelete = try self.backgroundContext.fetch(request)
+                for task in tasksToDelete {
+                    self.backgroundContext.delete(task) // Удаляем задачу в фоновом контексте
+                }
+
+                try self.backgroundContext.save() // Сохраняем изменения
+
+                DispatchQueue.main.async {
+                    withAnimation {
+                        // Обновляем список задач на главном потоке
+                        self.tasks.remove(atOffsets: offsets)
+                        self.filteredTasks = self.tasks
+                    }
+                }
+            } catch {
+                print("Ошибка при удалении задачи: \(error.localizedDescription)")
+            }
         }
     }
-    
+
+    // Обновление задачи
     func updateTask(task: TaskEntity, newTitle: String, newDescription: String, newDate: Date) {
-        task.title = newTitle
-        task.descriptionText = newDescription
-        task.date = DateFormatter.localizedString(from: newDate, dateStyle: .short, timeStyle: .short)
-        
-        do {
-            try context.save()
-            loadTasks()
-        } catch {
-            print("Ошибка при обновлении задачи: \(error.localizedDescription)")
+        backgroundContext.perform {
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %d", task.id)
+
+            do {
+                if let taskInBackgroundContext = try self.backgroundContext.fetch(request).first {
+                    taskInBackgroundContext.title = newTitle
+                    taskInBackgroundContext.descriptionText = newDescription
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "dd/MM/yy"
+                    taskInBackgroundContext.date = dateFormatter.string(from: newDate)
+
+                    try self.backgroundContext.save()
+
+                    DispatchQueue.main.async {
+                        self.loadTasks() // Обновляем список задач на главном потоке
+                    }
+                }
+            } catch {
+                print("Ошибка при обновлении задачи: \(error.localizedDescription)")
+            }
         }
     }
 }

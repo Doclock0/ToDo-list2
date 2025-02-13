@@ -3,63 +3,6 @@
 <plist version="1.0">
 <dict>
 	<key>top-level-items</key>
-	<array>
-		<dict>
-			<key>children</key>
-			<array>
-				<dict>
-					<key>destination</key>
-					<dict>
-						<key>rebasable-url</key>
-						<dict>
-							<key>base</key>
-							<string>workspace</string>
-							<key>payload</key>
-							<dict>
-								<key>relative-path</key>
-								<string>ToDo list2/ToDo_list2.xcdatamodeld/ToDo_list2.xcdatamodel</string>
-							</dict>
-						</dict>
-						<key>type</key>
-						<string>DVTDocumentLocation</string>
-					</dict>
-					<key>type</key>
-					<string>bookmark</string>
-				</dict>
-			</array>
-			<key>title</key>
-			<string>ToDo_list2.xcdatamodeld</string>
-			<key>type</key>
-			<string>group</string>
-		</dict>
-		<dict>
-			<key>children</key>
-			<array>
-				<dict>
-					<key>destination</key>
-					<dict>
-						<key>rebasable-url</key>
-						<dict>
-							<key>base</key>
-							<string>workspace</string>
-							<key>payload</key>
-							<dict>
-								<key>relative-path</key>
-								<string>ToDo list2/ToDo_list2.xcdatamodeld/ToDo_list2.xcdatamodel</string>
-							</dict>
-						</dict>
-						<key>type</key>
-						<string>DVTDocumentLocation</string>
-					</dict>
-					<key>type</key>
-					<string>bookmark</string>
-				</dict>
-			</array>
-			<key>title</key>
-			<string>ToDo_list2.xcdatamodeld</string>
-			<key>type</key>
-			<string>group</string>
-		</dict>
-	</array>
+	<array/>
 </dict>
 </plist>

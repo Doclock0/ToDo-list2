@@ -4,10 +4,10 @@ import SwiftUI
 
 class TaskListViewModel: ObservableObject {
     @Published var tasks: [TaskEntity] = []
-    @Published var filteredTasks: [TaskEntity] = [] // Отфильтрованные задачи
+    @Published var filteredTasks: [TaskEntity] = []
     @Published var searchText: String = "" {
         didSet {
-            updateSearchResults() // Вызываем поиск при изменении текста
+            updateSearchResults() // вызов поиск при изменении текста
         }
     }
 
@@ -92,7 +92,7 @@ class TaskListViewModel: ObservableObject {
             do {
                 try self.backgroundContext.save()
                 DispatchQueue.main.async {
-                    self.loadTasks() // Обновляем список задач на главном потоке
+                    self.loadTasks() // обновление спискка задач на главном потоке
                 }
             } catch {
                 print("Ошибка сохранения задач в CoreData: \(error.localizedDescription)")
@@ -115,7 +115,7 @@ class TaskListViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     withAnimation {
                         self.tasks.append(newTask)
-                        self.filteredTasks = self.tasks // Обновляем отфильтрованные задачи
+                        self.filteredTasks = self.tasks // обновление отфильтрованных задач
                     }
                 }
             } catch {
@@ -137,7 +137,7 @@ class TaskListViewModel: ObservableObject {
     // Обновление результатов поиска
     private func updateSearchResults() {
         if searchText.isEmpty {
-            filteredTasks = tasks // Если поисковой запрос пуст, показываем все задачи
+            filteredTasks = tasks
         } else {
             searchTasks(with: searchText) { filtered in
                 self.filteredTasks = filtered
@@ -157,7 +157,7 @@ class TaskListViewModel: ObservableObject {
                     try self.backgroundContext.save()
 
                     DispatchQueue.main.async {
-                        self.loadTasks() // Обновляем список задач на главном потоке
+                        self.loadTasks() // обовление список задач на главном потоке
                     }
                 }
             } catch {
@@ -169,24 +169,23 @@ class TaskListViewModel: ObservableObject {
     // Удаление задачи
     func deleteTask(at offsets: IndexSet) {
         backgroundContext.perform {
-            // Получаем ID задачи, которую нужно удалить
+            // ID задачи, которую нужно удалить
             let taskIDs = offsets.map { self.tasks[$0].id }
 
-            // Загружаем задачу в фоновом контексте
             let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
             request.predicate = NSPredicate(format: "id IN %@", taskIDs)
 
             do {
                 let tasksToDelete = try self.backgroundContext.fetch(request)
                 for task in tasksToDelete {
-                    self.backgroundContext.delete(task) // Удаляем задачу в фоновом контексте
+                    self.backgroundContext.delete(task)
                 }
 
-                try self.backgroundContext.save() // Сохраняем изменения
+                try self.backgroundContext.save()
 
                 DispatchQueue.main.async {
                     withAnimation {
-                        // Обновляем список задач на главном потоке
+                        
                         self.tasks.remove(atOffsets: offsets)
                         self.filteredTasks = self.tasks
                     }
@@ -214,7 +213,7 @@ class TaskListViewModel: ObservableObject {
                     try self.backgroundContext.save()
 
                     DispatchQueue.main.async {
-                        self.loadTasks() // Обновляем список задач на главном потоке
+                        self.loadTasks() 
                     }
                 }
             } catch {

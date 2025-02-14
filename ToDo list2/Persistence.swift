@@ -34,7 +34,7 @@ class PersistenceController {
         container.viewContext.automaticallyMergesChangesFromParent = true
     }
     
-    // Ленивое свойство для фонового контекста
+    // лэзи свойство для фонового контекста
     lazy var backgroundContext: NSManagedObjectContext = {
         let context = container.newBackgroundContext()
         context.automaticallyMergesChangesFromParent = true

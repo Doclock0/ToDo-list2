@@ -28,30 +28,33 @@ struct EditTaskView: View {
             Form {
                 Section(header: Text("Редактировать задачу")) {
                     TextField("Название задачи", text: $editedTitle)
-                        .onChange(of: editedTitle) { oldValue, newValue in
-                            if newValue.count > 100 {
-                                editedTitle = String(newValue.prefix(100))
+                        .onReceive(editedTitle.publisher.collect()) { value in
+                            if value.count > 100 {
+                                editedTitle = String(value.prefix(100))
                             }
                         }
                         .keyboardType(.default)
+                        .ignoresSafeArea(.keyboard)
                     
                     TextField("Описание задачи", text: Binding(
                         get: { editedDescription.isEmpty ? "" : editedDescription },
-                        set: { editedDescription = $0 }
-                    ))
-                    .onChange(of: editedDescription) { oldValue, newValue in
-                        if newValue.count > 900 {
-                            editedDescription = String(newValue.prefix(900))
+                        set: { newValue in
+                            if newValue.count <= 900 {
+                                editedDescription = newValue
+                            }
                         }
-                    }
-                    .keyboardType(.default)
+                    ))
+                        
                     
-                    // Обернули DatePicker в VStack и добавили ignoresSafeArea
+                    .keyboardType(.default)
+                    .ignoresSafeArea(.keyboard)
+                    
+                    
                     VStack {
                         DatePicker("Дата", selection: $editedDate, displayedComponents: .date)
                             .environment(\.locale, Locale(identifier: "ru_RU"))
                     }
-                    .ignoresSafeArea(.keyboard) // Игнорируем клавиатуру
+                    .ignoresSafeArea(.keyboard)
                 }
             }
             .navigationTitle("Редактировать задачу")
@@ -70,6 +73,6 @@ struct EditTaskView: View {
                 }
             }
         }
-        .ignoresSafeArea(.keyboard) // Дополнительно игнорируем клавиатуру для всего NavigationStack
+        .ignoresSafeArea(.keyboard) 
     }
 }

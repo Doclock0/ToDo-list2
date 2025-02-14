@@ -5,7 +5,7 @@ struct ContentView: View {
     @State private var newTaskTitle = ""
     @State private var showAddTaskView = false
     @State private var selectedTask: TaskEntity?
-
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -14,11 +14,23 @@ struct ContentView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
                         .padding(.leading, 10)
-                    TextField("Поиск", text: $viewModel.searchText)
-                        .foregroundColor(.white)
-                        .padding(8)
-                        .background(Color(red: 39/255, green: 39/255, blue: 41/255))
-                        .cornerRadius(8)
+                    ZStack(alignment: .leading) {
+                        // Плейсхолдер
+                        if viewModel.searchText.isEmpty {
+                            Text("Search")
+                                .foregroundColor(.white.opacity(0.5))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 8)
+                        }
+
+                        // Поле ввода
+                        TextField("", text: $viewModel.searchText)
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Color.clear)
+                            .cornerRadius(8)
+                            .ignoresSafeArea(.keyboard)
+                    }
                 }
                 .frame(height: 36)
                 .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
@@ -26,14 +38,19 @@ struct ContentView: View {
                 .padding(.top, 10)
                 .padding(.bottom, 8)
                 .padding(.horizontal, 20)
-
+                
                 // Список задач
                 List {
-                    ForEach(viewModel.filteredTasks.indices, id: \.self) { index in
+                    ForEach(viewModel.filteredTasks.indices, id: \ .self) { index in
                         if index < viewModel.filteredTasks.count {
                             let task = viewModel.filteredTasks[index]
                             NavigationLink(value: task) {
                                 VStack(spacing: 0) {
+                                    if index > 0 {
+                                        Rectangle()
+                                            .fill(Color.gray)
+                                            .frame(height: 0.5)
+                                    }
                                     HStack(alignment: .top, spacing: 12) {
                                         ZStack {
                                             Circle()
@@ -44,7 +61,6 @@ struct ContentView: View {
                                                         viewModel.toggleCompletion(for: task)
                                                     }
                                                 }
-
                                             if task.isCompleted {
                                                 Image(systemName: "checkmark")
                                                     .resizable()
@@ -52,22 +68,31 @@ struct ContentView: View {
                                                     .foregroundColor(Color.yellow)
                                             }
                                         }
-
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(task.title ?? "")
                                                 .font(.headline)
                                                 .strikethrough(task.isCompleted)
                                                 .foregroundColor(task.isCompleted ? Color.gray : Color.white)
-
+                                            
+                                            // Описание задачи
                                             if let description = task.descriptionText, !description.isEmpty {
                                                 Text(description)
                                                     .font(.subheadline)
                                                     .foregroundColor(task.isCompleted ? Color.gray : Color.white)
                                                     .lineLimit(2)
+                                            } else {
+                                                Text("нет описания")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
                                             }
-
+                                            
+                                            // Дата задачи
                                             if let date = task.date, !date.isEmpty {
                                                 Text(date)
+                                                    .font(.caption)
+                                                    .foregroundColor(.gray)
+                                            } else {
+                                                Text("нет даты")
                                                     .font(.caption)
                                                     .foregroundColor(.gray)
                                             }
@@ -75,12 +100,7 @@ struct ContentView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     }
                                     .padding(.vertical, 12)
-
-                                    Rectangle()
-                                        .fill(Color.gray)
-                                        .frame(height: 0.5)
                                 }
-                                .transition(.opacity)
                             }
                             .listRowBackground(Color.black)
                             .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
@@ -91,7 +111,6 @@ struct ContentView: View {
                                 } label: {
                                     Label("Редактировать", systemImage: "pencil")
                                 }
-
                                 Button(role: .destructive) {
                                     withAnimation(.easeInOut(duration: 0.3)) {
                                         viewModel.deleteTask(at: IndexSet(integer: index))
@@ -105,7 +124,7 @@ struct ContentView: View {
                     .animation(.easeInOut, value: viewModel.filteredTasks)
                 }
                 .listStyle(PlainListStyle())
-
+                
                 // Footer
                 ZStack {
                     HStack {

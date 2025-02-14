@@ -36,26 +36,26 @@ struct TaskDetailView: View {
                 
                 Spacer()
             }
-            .padding(.top, 8) // Отступ сверху
-            .padding(.horizontal, 20) // Отступ слева и справа
-            .frame(maxWidth: .infinity, alignment: .leading) // Обеспечивает, что VStack растягивается на всю ширину
+            .padding(.top, 8) 
+            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .navigationTitle("Детали") // Заголовок экрана
+        .navigationTitle("Детали")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true) // Компактный заголовок
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
-                    dismiss() // Закрываем экран
+                    dismiss()
                 }) {
                     HStack {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 17, weight: .semibold, design: .default)) // Размер 17, вес semibold
-                            .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255)) // Цвет иконки
+                            .font(.system(size: 17, weight: .semibold, design: .default))
+                            .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255))
                     }
                         Text("Назад") // Текст кнопки
                             .font(.system(size: 22))
-                            .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255)) // Цвет текста
+                            .foregroundColor(Color(red: 254 / 255, green: 215 / 255, blue: 2 / 255))
                             .padding(.leading, 6)
                     }
                     .padding(.leading, -16)

@@ -26,12 +26,7 @@ class TaskListViewModel: ObservableObject {
 
     // Проверка первого запуска
     private func isFirstLaunch() -> Bool {
-        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
-        if !hasLaunchedBefore {
-            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
-            return true
-        }
-        return false
+        return !UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
     }
 
     // Загрузка задач из CoreData
@@ -70,6 +65,8 @@ class TaskListViewModel: ObservableObject {
                 let todoResponse = try JSONDecoder().decode(TodoResponse.self, from: data)
                 DispatchQueue.main.async {
                     self.saveTasksFromAPI(todos: todoResponse.todos)
+                    // Устанавливает флаг только после успешного сохранения данных
+                    UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
                 }
             } catch {
                 print("Ошибка декодирования: \(error.localizedDescription)")

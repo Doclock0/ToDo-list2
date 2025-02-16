@@ -7,7 +7,7 @@ class TaskListViewModel: ObservableObject {
     @Published var filteredTasks: [TaskEntity] = []
     @Published var searchText: String = "" {
         didSet {
-            updateSearchResults() // вызов поиск при изменении текста
+            updateSearchResults() // Обновляем результаты поиска при изменении текста
         }
     }
 
@@ -37,7 +37,7 @@ class TaskListViewModel: ObservableObject {
 
         do {
             tasks = try context.fetch(request)
-            filteredTasks = tasks // Инициализируем filteredTasks всеми задачами
+            updateSearchResults() // Обновляем результаты поиска после загрузки задач
         } catch {
             print("Ошибка загрузки задач из Core Data: \(error.localizedDescription)")
         }
@@ -89,7 +89,7 @@ class TaskListViewModel: ObservableObject {
             do {
                 try self.backgroundContext.save()
                 DispatchQueue.main.async {
-                    self.loadTasks() // обновление спискка задач на главном потоке
+                    self.loadTasks() // Обновление списка задач на главном потоке
                 }
             } catch {
                 print("Ошибка сохранения задач в CoreData: \(error.localizedDescription)")
@@ -112,21 +112,11 @@ class TaskListViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     withAnimation {
                         self.tasks.append(newTask)
-                        self.filteredTasks = self.tasks // обновление отфильтрованных задач
+                        self.updateSearchResults() // Обновляем результаты поиска
                     }
                 }
             } catch {
                 print("Ошибка при сохранении задачи: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    // Поиск задач
-    func searchTasks(with text: String, completion: @escaping ([TaskEntity]) -> Void) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            let filtered = self.tasks.filter { $0.title?.localizedCaseInsensitiveContains(text) == true }
-            DispatchQueue.main.async {
-                completion(filtered)
             }
         }
     }
@@ -136,8 +126,8 @@ class TaskListViewModel: ObservableObject {
         if searchText.isEmpty {
             filteredTasks = tasks
         } else {
-            searchTasks(with: searchText) { filtered in
-                self.filteredTasks = filtered
+            filteredTasks = tasks.filter { task in
+                task.title?.localizedCaseInsensitiveContains(searchText) == true
             }
         }
     }
@@ -154,7 +144,7 @@ class TaskListViewModel: ObservableObject {
                     try self.backgroundContext.save()
 
                     DispatchQueue.main.async {
-                        self.loadTasks() // обовление список задач на главном потоке
+                        self.loadTasks() // Обновление списка задач на главном потоке
                     }
                 }
             } catch {
@@ -182,9 +172,8 @@ class TaskListViewModel: ObservableObject {
 
                 DispatchQueue.main.async {
                     withAnimation {
-                        
                         self.tasks.remove(atOffsets: offsets)
-                        self.filteredTasks = self.tasks
+                        self.updateSearchResults() // Обновляем результаты поиска
                     }
                 }
             } catch {
@@ -210,7 +199,7 @@ class TaskListViewModel: ObservableObject {
                     try self.backgroundContext.save()
 
                     DispatchQueue.main.async {
-                        self.loadTasks() 
+                        self.loadTasks() // Обновление списка задач на главном потоке
                     }
                 }
             } catch {

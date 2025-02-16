@@ -4,7 +4,8 @@ struct ContentView: View {
     @StateObject private var viewModel = TaskListViewModel()
     @State private var showAddTaskView = false
     @State private var selectedTask: TaskEntity?
-    
+    @FocusState private var isSearchFieldFocused: Bool
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -44,8 +45,8 @@ struct ContentView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.gray)
                 .padding(.leading, 10)
+            
             ZStack(alignment: .leading) {
-                // Плейсхолдер
                 if viewModel.searchText.isEmpty {
                     Text("Search")
                         .foregroundColor(.white.opacity(0.5))
@@ -53,13 +54,12 @@ struct ContentView: View {
                         .padding(.vertical, 8)
                 }
 
-                // Поле ввода
                 TextField("", text: $viewModel.searchText)
                     .foregroundColor(.white)
                     .padding(8)
                     .background(Color.clear)
                     .cornerRadius(8)
-                    .ignoresSafeArea(.keyboard)
+                    .focused($isSearchFieldFocused)
             }
         }
         .frame(height: 36)
@@ -102,6 +102,7 @@ struct ContentView: View {
             .animation(.easeInOut, value: viewModel.filteredTasks)
         }
         .listStyle(PlainListStyle())
+        .scrollDismissesKeyboard(.never) // Предотвращение скрытия клавиатуры
     }
     
     // Футер
@@ -150,6 +151,7 @@ struct ContentView: View {
                             withAnimation {
                                 viewModel.toggleCompletion(for: task)
                             }
+                            isSearchFieldFocused = true // Сохранение фокусв на поискке
                         }
                     if task.isCompleted {
                         Image(systemName: "checkmark")
@@ -164,7 +166,6 @@ struct ContentView: View {
                         .strikethrough(task.isCompleted)
                         .foregroundColor(task.isCompleted ? Color.gray : Color.white)
                     
-                    // Описание задачи
                     if let description = task.descriptionText, !description.isEmpty {
                         Text(description)
                             .font(.subheadline)
@@ -176,7 +177,6 @@ struct ContentView: View {
                             .foregroundColor(.gray)
                     }
                     
-                    // Дата задачи
                     if let date = task.date, !date.isEmpty {
                         Text(date)
                             .font(.caption)

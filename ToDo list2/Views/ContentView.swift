@@ -1,9 +1,10 @@
 import SwiftUI
 
 struct ContentView: View {
+    // MARK: - State Variables
     @StateObject private var viewModel = TaskListViewModel()
-    @State private var showAddTaskView = false
-    @State private var selectedTask: TaskEntity?
+    @State private var isAddTaskViewPresented = false
+    @State private var selectedTaskForEditing: TaskEntity?
     @FocusState private var isSearchFieldFocused: Bool
 
     var body: some View {
@@ -14,10 +15,10 @@ struct ContentView: View {
                 footer
             }
             .background(Color.black)
-            .sheet(isPresented: $showAddTaskView) {
+            .sheet(isPresented: $isAddTaskViewPresented) {
                 AddTaskView(viewModel: viewModel)
             }
-            .sheet(item: $selectedTask) { task in
+            .sheet(item: $selectedTaskForEditing) { task in
                 EditTaskView(viewModel: viewModel, task: task)
             }
             .toolbar {
@@ -36,7 +37,7 @@ struct ContentView: View {
         }
     }
     
-    // MARK: - Компоненты
+    // MARK: - Components
     
     // Поисковая строка
     @ViewBuilder
@@ -47,6 +48,7 @@ struct ContentView: View {
                 .padding(.leading, 10)
             
             ZStack(alignment: .leading) {
+                // Плейсхолдер для пустого поля поиска
                 if viewModel.searchText.isEmpty {
                     Text("Search")
                         .foregroundColor(.white.opacity(0.5))
@@ -54,12 +56,13 @@ struct ContentView: View {
                         .padding(.vertical, 8)
                 }
 
+                // Поле ввода текста
                 TextField("", text: $viewModel.searchText)
                     .foregroundColor(.white)
                     .padding(8)
                     .background(Color.clear)
                     .cornerRadius(8)
-                    .focused($isSearchFieldFocused)
+                    .focused($isSearchFieldFocused) // Управление фокусом
             }
         }
         .frame(height: 36)
@@ -73,35 +76,47 @@ struct ContentView: View {
     // Список задач
     @ViewBuilder
     private var taskList: some View {
-        List {
-            ForEach(viewModel.filteredTasks.indices, id: \.self) { index in
-                if index < viewModel.filteredTasks.count {
-                    let task = viewModel.filteredTasks[index]
-                    NavigationLink(value: task) {
-                        taskRow(task: task, index: index)
-                    }
-                    .listRowBackground(Color.black)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
-                    .listRowSeparator(.hidden)
-                    .contextMenu {
-                        Button {
-                            selectedTask = task
-                        } label: {
-                            Label("Редактировать", systemImage: "pencil")
-                        }
-                        Button(role: .destructive) {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                viewModel.deleteTask(at: IndexSet(integer: index))
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(viewModel.filteredTasks.indices, id: \.self) { index in
+                    if index < viewModel.filteredTasks.count {
+                        let task = viewModel.filteredTasks[index]
+                        VStack(spacing: 0) {
+                            // Разделитель сверху
+                            if index > 0 {
+                                Rectangle()
+                                    .fill(Color.gray)
+                                    .frame(height: 1)
+                                    .opacity(0.5)
                             }
-                        } label: {
-                            Label("Удалить", systemImage: "trash")
+                            
+                            // Строка задачи
+                            NavigationLink(value: task) {
+                                taskRow(task: task, index: index)
+                            }
+                            .background(Color.black)
+                            .contextMenu {
+                                // Контекстное меню для редактирования и удаления задачи
+                                Button {
+                                    selectedTaskForEditing = task
+                                } label: {
+                                    Label("Редактировать", systemImage: "pencil")
+                                }
+                                Button(role: .destructive) {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        viewModel.deleteTask(at: IndexSet(integer: index))
+                                    }
+                                } label: {
+                                    Label("Удалить", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                 }
             }
-            .animation(.easeInOut, value: viewModel.filteredTasks)
+            .padding(.leading, 20)
+            .padding(.trailing, 20)
         }
-        .listStyle(PlainListStyle())
         .scrollDismissesKeyboard(.never) // Предотвращение скрытия клавиатуры
     }
     
@@ -119,7 +134,7 @@ struct ContentView: View {
             HStack {
                 Spacer()
                 Button(action: {
-                    showAddTaskView.toggle()
+                    isAddTaskViewPresented.toggle()
                 }) {
                     Image(systemName: "square.and.pencil")
                         .resizable()
@@ -136,61 +151,68 @@ struct ContentView: View {
     // Строка задачи
     @ViewBuilder
     private func taskRow(task: TaskEntity, index: Int) -> some View {
-        VStack(spacing: 0) {
-            if index > 0 {
-                Rectangle()
-                    .fill(Color.gray)
-                    .frame(height: 0.5)
-            }
-            HStack(alignment: .top, spacing: 12) {
-                ZStack {
-                    Circle()
-                        .stroke(task.isCompleted ? Color.yellow : Color.gray, lineWidth: 1.5)
-                        .frame(width: 24, height: 24)
-                        .onTapGesture {
-                            withAnimation {
-                                viewModel.toggleCompletion(for: task)
-                            }
-                            isSearchFieldFocused = true // Сохранение фокусв на поискке
+        HStack(alignment: .top, spacing: 12) {
+            // Круг для отметки выполнения задачи
+            ZStack {
+                Circle()
+                    .stroke(task.isCompleted ? Color.yellow : Color.gray, lineWidth: 1.5)
+                    .frame(width: 24, height: 24)
+                    .onTapGesture {
+                        withAnimation {
+                            viewModel.toggleCompletion(for: task)
                         }
-                    if task.isCompleted {
-                        Image(systemName: "checkmark")
-                            .resizable()
-                            .frame(width: 12, height: 9)
-                            .foregroundColor(Color.yellow)
+                        isSearchFieldFocused = true // Сохранение фокуса на поиске
                     }
+                if task.isCompleted {
+                    Image(systemName: "checkmark")
+                        .resizable()
+                        .frame(width: 12, height: 9)
+                        .foregroundColor(Color.yellow)
                 }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(task.title ?? "")
-                        .font(.headline)
-                        .strikethrough(task.isCompleted)
-                        .foregroundColor(task.isCompleted ? Color.gray : Color.white)
-                    
-                    if let description = task.descriptionText, !description.isEmpty {
-                        Text(description)
-                            .font(.subheadline)
-                            .foregroundColor(task.isCompleted ? Color.gray : Color.white)
-                            .lineLimit(2)
-                    } else {
-                        Text("нет описания")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                    
-                    if let date = task.date, !date.isEmpty {
-                        Text(date)
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    } else {
-                        Text("нет даты")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.vertical, 12)
+            
+            // Текст задачи
+            VStack(alignment: .leading, spacing: 6) {
+                Text(task.title ?? "")
+                    .lineLimit(1)
+                    .font(.headline)
+                    .strikethrough(task.isCompleted)
+                    .foregroundColor(task.isCompleted ? Color.gray : Color.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.leading)
+                
+                if let description = task.descriptionText, !description.isEmpty {
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundColor(task.isCompleted ? Color.gray : Color.white)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
+                } else {
+                    Text("нет описания")
+                        .font(.subheadline)
+                        .foregroundColor(task.isCompleted ? Color.gray : .white) // Цвет зависит от isCompleted
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                if let date = task.date, !date.isEmpty {
+                    Text(date)
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
+                } else {
+                    Text("нет даты")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.vertical, 12)
     }
 }
 

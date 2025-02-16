@@ -34,6 +34,14 @@ struct ContentView: View {
             .navigationDestination(for: TaskEntity.self) { task in
                 TaskDetailView(task: task)
             }
+            .onTapGesture {
+                // Скрываем клавиатуру при нажатии вне текстового поля
+                isSearchFieldFocused = false
+            }
+            .onAppear {
+                // Убедимся, что фокус не активируется автоматически при открытии приложения
+                isSearchFieldFocused = false
+            }
         }
     }
     
@@ -63,6 +71,10 @@ struct ContentView: View {
                     .background(Color.clear)
                     .cornerRadius(8)
                     .focused($isSearchFieldFocused) // Управление фокусом
+                    .onTapGesture {
+                        // Активируем фокус только при явном нажатии на TextField
+                        isSearchFieldFocused = true
+                    }
             }
         }
         .frame(height: 36)
@@ -117,7 +129,7 @@ struct ContentView: View {
             .padding(.leading, 20)
             .padding(.trailing, 20)
         }
-        .scrollDismissesKeyboard(.never) // Предотвращение скрытия клавиатуры
+        .scrollDismissesKeyboard(.immediately) // Скрываем клавиатуру при скролле
     }
     
     // Футер
@@ -161,7 +173,7 @@ struct ContentView: View {
                         withAnimation {
                             viewModel.toggleCompletion(for: task)
                         }
-                        isSearchFieldFocused = true // Сохранение фокуса на поиске
+                        isSearchFieldFocused = false // Убираем фокус с поиска
                     }
                 if task.isCompleted {
                     Image(systemName: "checkmark")
@@ -191,7 +203,7 @@ struct ContentView: View {
                 } else {
                     Text("нет описания")
                         .font(.subheadline)
-                        .foregroundColor(task.isCompleted ? Color.gray : .white) // Цвет зависит от isCompleted
+                        .foregroundColor(task.isCompleted ? Color.gray : .white)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .multilineTextAlignment(.leading)
                 }

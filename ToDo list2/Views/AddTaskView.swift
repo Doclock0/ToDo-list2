@@ -10,28 +10,55 @@ struct AddTaskView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Новая задача")) {
-                    
-                    TextField("Название задачи", text: $newTaskTitle)
-                        .onReceive(newTaskTitle.publisher.collect()) { value in
-                            if value.count > 100 {
-                                newTaskTitle = String(value.prefix(100))
+                Section(header: Text("Новая задача")
+                    .foregroundColor(.white)
+                    .font(.headline)
+                ) {
+                    // Поле для названия задачи
+                    TextField("Название задачи", text: $newTaskTitle, prompt: Text("Название задачи").foregroundColor(.white.opacity(0.5)))
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                        .cornerRadius(8)
+                        .onChange(of: newTaskTitle) { oldValue, newValue in
+                            if newValue.count > 100 {
+                                newTaskTitle = String(newValue.prefix(100)) // Ограничение до 100 символов
                             }
                         }
-                    
-                  
-                    TextField("Описание задачи", text: $newTaskDescription)
-                        .onReceive(newTaskDescription.publisher.collect()) { value in
-                            if value.count > 900 {
-                                newTaskDescription = String(value.prefix(900))
+
+                    // Поле для описания задачи
+                    TextField("Описание задачи", text: $newTaskDescription, prompt: Text("Описание задачи").foregroundColor(.white.opacity(0.5)))
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                        .cornerRadius(8)
+                        .onChange(of: newTaskDescription) { oldValue, newValue in
+                            if newValue.count > 900 {
+                                newTaskDescription = String(newValue.prefix(900)) // Ограничение до 900 символов
                             }
                         }
-                    
-                    // Выбор даты
-                    DatePicker("Дата", selection: $newTaskDate, displayedComponents: .date)
+
+                    // Поле для выбора даты
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("ДАТА")
+                            .foregroundColor(.white)
+                            .font(.headline)
+                        
+                        DatePicker("", selection: $newTaskDate, displayedComponents: .date)
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                            .padding(10)
+                            .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                            .cornerRadius(8)
+                            .colorScheme(.dark)
+                    }
                 }
+                .listRowBackground(Color.black)
             }
-            .navigationTitle("Добавить задачу")
+            .scrollContentBackground(.hidden)
+            .background(Color.black)
+            .toolbarBackground(Color.black, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Сохранить") {
@@ -39,7 +66,6 @@ struct AddTaskView: View {
                         dateFormatter.dateFormat = "dd/MM/yy"
                         let formattedDate = dateFormatter.string(from: newTaskDate)
                         
-                        // передаю пустую строку, если описание не указано
                         viewModel.addTask(
                             title: newTaskTitle,
                             description: newTaskDescription.isEmpty ? "" : newTaskDescription,
@@ -48,9 +74,11 @@ struct AddTaskView: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .disabled(newTaskTitle.isEmpty)
+                    .foregroundColor(.white)
                 }
             }
-            .ignoresSafeArea(.keyboard) 
+            .tint(.white)
+            .ignoresSafeArea(.keyboard)
         }
     }
 }

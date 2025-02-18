@@ -1,3 +1,4 @@
+
 import SwiftUI
 
 struct EditTaskView: View {
@@ -26,16 +27,21 @@ struct EditTaskView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Редактировать задачу")) {
+                Section(header: Text("Редактировать задачу")
+                    .foregroundColor(.white)
+                    .font(.headline)
+                ) {
                     TextField("Название задачи", text: $editedTitle)
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                        .cornerRadius(8)
                         .onReceive(editedTitle.publisher.collect()) { value in
                             if value.count > 100 {
                                 editedTitle = String(value.prefix(100))
                             }
                         }
-                        .keyboardType(.default)
-                        .ignoresSafeArea(.keyboard)
-                    
+
                     TextField("Описание задачи", text: Binding(
                         get: { editedDescription.isEmpty ? "" : editedDescription },
                         set: { newValue in
@@ -43,21 +49,32 @@ struct EditTaskView: View {
                                 editedDescription = newValue
                             }
                         }
-                    ))
-                        
-                    
-                    .keyboardType(.default)
-                    .ignoresSafeArea(.keyboard)
-                    
-                    
-                    VStack {
-                        DatePicker("Дата", selection: $editedDate, displayedComponents: .date)
-                            .environment(\.locale, Locale(identifier: "ru_RU"))
+                    ), prompt: Text("Описание задачи").foregroundColor(.white.opacity(0.5)))
+                    .foregroundColor(.white) // Добавьте этот модификатор
+                    .padding(10)
+                    .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                    .cornerRadius(8)
+
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text("ДАТА")
+                            .foregroundColor(.white)
+                            .font(.headline)
+
+                        DatePicker("", selection: $editedDate, displayedComponents: .date)
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                            .padding(10)
+                            .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                            .cornerRadius(8)
+                            .colorScheme(.dark)
                     }
-                    .ignoresSafeArea(.keyboard)
                 }
+                .listRowBackground(Color.black)
             }
-            .navigationTitle("Редактировать задачу")
+            .scrollContentBackground(.hidden)
+            .background(Color.black)
+            .toolbarBackground(Color.black, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Сохранить") {
@@ -70,9 +87,11 @@ struct EditTaskView: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .disabled(editedTitle.isEmpty)
+                    .foregroundColor(.white)
                 }
             }
+            .tint(.white)
+            .ignoresSafeArea(.keyboard)
         }
-        .ignoresSafeArea(.keyboard) 
     }
 }

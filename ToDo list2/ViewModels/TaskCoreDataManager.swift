@@ -1,17 +1,34 @@
 import CoreData
-import Foundation
+import Combine
 
-class TaskCoreDataManager {
+class TaskCoreDataManager: ObservableObject {
     static let shared = TaskCoreDataManager()
-    let context: NSManagedObjectContext // Основной контекст для чтения данных
-    let backgroundContext: NSManagedObjectContext // Фоновый контекст для записи
+    
+    let context: NSManagedObjectContext
+    let backgroundContext: NSManagedObjectContext
+    
+    @Published var tasks: [Task] = [] // Автоматическое обновление списка задач
+    private var cancellables = Set<AnyCancellable>()
 
     private init() {
         context = PersistenceController.shared.container.viewContext
-        backgroundContext = PersistenceController.shared.backgroundContext // фоновый контекст из PersistenceController
+        backgroundContext = PersistenceController.shared.backgroundContext
+        
+        // Подписка на изменения Core Data
+        observeCoreDataChanges()
+        fetchTasks()
     }
 
-    // Сохранение задачи
+    // MARK: - Подписка на изменения Core Data
+    private func observeCoreDataChanges() {
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: context)
+            .sink { [weak self] _ in
+                self?.fetchTasks()
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Сохранение задачи
     func saveTask(id: Int, title: String, description: String?, date: String, isCompleted: Bool) {
         backgroundContext.perform {
             let taskEntity = TaskEntity(context: self.backgroundContext)
@@ -29,32 +46,43 @@ class TaskCoreDataManager {
         }
     }
 
-    // Загрузка всех задач 
-    func fetchTasks() -> [Task] {
+    // MARK: - Загрузка всех задач
+    func fetchTasks() {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-
-        // Сортировка по id
         let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
         request.sortDescriptors = [sortDescriptor]
 
         do {
             let entities = try context.fetch(request)
-            return entities.map { entity in
-                Task(
-                    id: Int(entity.id),
-                    title: entity.title ?? "",
-                    descriptionText: entity.descriptionText,
-                    date: entity.date ?? "",
-                    isCompleted: entity.isCompleted
-                )
+            DispatchQueue.main.async {
+                self.tasks = entities.map { Task(id: Int($0.id), title: $0.title ?? "", descriptionText: $0.descriptionText, date: $0.date ?? "", isCompleted: $0.isCompleted) }
             }
         } catch {
             print("Ошибка загрузки задач: \(error)")
-            return []
         }
     }
 
-    // Удаление задачи
+    // MARK: - Асинхронная загрузка с Combine
+    func fetchTasksPublisher() -> AnyPublisher<[Task], Never> {
+        Future { promise in
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
+            request.sortDescriptors = [sortDescriptor]
+
+            do {
+                let entities = try self.context.fetch(request)
+                let tasks = entities.map { Task(id: Int($0.id), title: $0.title ?? "", descriptionText: $0.descriptionText, date: $0.date ?? "", isCompleted: $0.isCompleted) }
+                promise(.success(tasks))
+            } catch {
+                print("Ошибка загрузки задач: \(error)")
+                promise(.success([]))
+            }
+        }
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+    }
+
+    // MARK: - Удаление задачи
     func deleteTask(id: Int) {
         backgroundContext.perform {
             let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
@@ -71,18 +99,7 @@ class TaskCoreDataManager {
         }
     }
 
-    // Сохранение изменений в контексте
-    private func saveContext() {
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                print("Ошибка сохранения контекста: \(error)")
-            }
-        }
-    }
-
-    // Изменение задачи
+    // MARK: - Обновление задачи
     func updateTask(task: TaskEntity, newTitle: String, newDescription: String, newDate: Date) {
         backgroundContext.perform {
             task.title = newTitle
@@ -99,3 +116,4 @@ class TaskCoreDataManager {
         }
     }
 }
+

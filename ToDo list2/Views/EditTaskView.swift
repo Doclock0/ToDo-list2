@@ -50,7 +50,7 @@ struct EditTaskView: View {
                             }
                         }
                     ), prompt: Text("Описание задачи").foregroundColor(.white.opacity(0.5)))
-                    .foregroundColor(.white) // Добавьте этот модификатор
+                    .foregroundColor(.white) 
                     .padding(10)
                     .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                     .cornerRadius(8)

@@ -18,6 +18,7 @@ struct AddTaskView: View {
                     TextField("Название задачи", text: $newTaskTitle, prompt: Text("Название задачи").foregroundColor(.white.opacity(0.5)))
                         .foregroundColor(.white)
                         .padding(10)
+                        .frame(maxWidth: .infinity) // Делаем ширину на всю доступную область
                         .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                         .cornerRadius(8)
                         .onChange(of: newTaskTitle) { oldValue, newValue in
@@ -30,6 +31,7 @@ struct AddTaskView: View {
                     TextField("Описание задачи", text: $newTaskDescription, prompt: Text("Описание задачи").foregroundColor(.white.opacity(0.5)))
                         .foregroundColor(.white)
                         .padding(10)
+                        .frame(maxWidth: .infinity)
                         .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                         .cornerRadius(8)
                         .onChange(of: newTaskDescription) { oldValue, newValue in
@@ -39,7 +41,7 @@ struct AddTaskView: View {
                         }
 
                     // Поле для выбора даты
-                    VStack(alignment: .leading, spacing: 15) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("ДАТА")
                             .foregroundColor(.white)
                             .font(.headline)
@@ -48,10 +50,12 @@ struct AddTaskView: View {
                             .datePickerStyle(.wheel)
                             .labelsHidden()
                             .padding(10)
+                            .frame(maxWidth: .infinity) // Растягиваем по ширине
                             .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                             .cornerRadius(8)
                             .colorScheme(.dark)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading) // Выровняем по левому краю
                 }
                 .listRowBackground(Color.black)
             }
@@ -83,3 +87,4 @@ struct AddTaskView: View {
         }
     }
 }
+

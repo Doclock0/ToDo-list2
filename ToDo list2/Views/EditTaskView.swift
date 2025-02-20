@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct EditTaskView: View {
@@ -31,9 +30,11 @@ struct EditTaskView: View {
                     .foregroundColor(.white)
                     .font(.headline)
                 ) {
+                    // Поле для редактирования названия задачи
                     TextField("Название задачи", text: $editedTitle)
                         .foregroundColor(.white)
                         .padding(10)
+                        .frame(maxWidth: .infinity)
                         .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                         .cornerRadius(8)
                         .onReceive(editedTitle.publisher.collect()) { value in
@@ -42,6 +43,7 @@ struct EditTaskView: View {
                             }
                         }
 
+                    // Поле для редактирования описания задачи
                     TextField("Описание задачи", text: Binding(
                         get: { editedDescription.isEmpty ? "" : editedDescription },
                         set: { newValue in
@@ -50,12 +52,14 @@ struct EditTaskView: View {
                             }
                         }
                     ), prompt: Text("Описание задачи").foregroundColor(.white.opacity(0.5)))
-                    .foregroundColor(.white) 
+                    .foregroundColor(.white)
                     .padding(10)
+                    .frame(maxWidth: .infinity)
                     .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                     .cornerRadius(8)
 
-                    VStack(alignment: .leading, spacing: 15) {
+                    // Поле для выбора даты
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("ДАТА")
                             .foregroundColor(.white)
                             .font(.headline)
@@ -64,10 +68,12 @@ struct EditTaskView: View {
                             .datePickerStyle(.wheel)
                             .labelsHidden()
                             .padding(10)
+                            .frame(maxWidth: .infinity)
                             .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                             .cornerRadius(8)
                             .colorScheme(.dark)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .listRowBackground(Color.black)
             }
@@ -96,3 +102,4 @@ struct EditTaskView: View {
         }
     }
 }
+

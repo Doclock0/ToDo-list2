@@ -48,34 +48,38 @@ class TaskCoreDataManager: ObservableObject {
 
     // MARK: - Загрузка всех задач
     func fetchTasks() {
-        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
-        request.sortDescriptors = [sortDescriptor]
-
-        do {
-            let entities = try context.fetch(request)
-            DispatchQueue.main.async {
-                self.tasks = entities.map { Task(id: Int($0.id), title: $0.title ?? "", descriptionText: $0.descriptionText, date: $0.date ?? "", isCompleted: $0.isCompleted) }
-            }
-        } catch {
-            print("Ошибка загрузки задач: \(error)")
-        }
-    }
-
-    // MARK: - Асинхронная загрузка с Combine
-    func fetchTasksPublisher() -> AnyPublisher<[Task], Never> {
-        Future { promise in
+        context.perform {
             let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
             let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
             request.sortDescriptors = [sortDescriptor]
 
             do {
                 let entities = try self.context.fetch(request)
-                let tasks = entities.map { Task(id: Int($0.id), title: $0.title ?? "", descriptionText: $0.descriptionText, date: $0.date ?? "", isCompleted: $0.isCompleted) }
-                promise(.success(tasks))
+                DispatchQueue.main.async {
+                    self.tasks = entities.map { Task(id: Int($0.id), title: $0.title ?? "", descriptionText: $0.descriptionText, date: $0.date ?? "", isCompleted: $0.isCompleted) }
+                }
             } catch {
                 print("Ошибка загрузки задач: \(error)")
-                promise(.success([]))
+            }
+        }
+    }
+
+    // MARK: - Асинхронная загрузка с Combine
+    func fetchTasksPublisher() -> AnyPublisher<[Task], Never> {
+        Future { promise in
+            self.context.perform {
+                let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+                let sortDescriptor = NSSortDescriptor(key: "id", ascending: true)
+                request.sortDescriptors = [sortDescriptor]
+
+                do {
+                    let entities = try self.context.fetch(request)
+                    let tasks = entities.map { Task(id: Int($0.id), title: $0.title ?? "", descriptionText: $0.descriptionText, date: $0.date ?? "", isCompleted: $0.isCompleted) }
+                    promise(.success(tasks))
+                } catch {
+                    print("Ошибка загрузки задач: \(error)")
+                    promise(.success([]))
+                }
             }
         }
         .receive(on: DispatchQueue.main)

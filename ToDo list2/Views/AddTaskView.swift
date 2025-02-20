@@ -6,6 +6,7 @@ struct AddTaskView: View {
     @State private var newTaskTitle = ""
     @State private var newTaskDescription = ""
     @State private var newTaskDate = Date()
+    @State private var showError = true
     
     var body: some View {
         NavigationStack {
@@ -15,17 +16,28 @@ struct AddTaskView: View {
                     .font(.headline)
                 ) {
                     // Поле для названия задачи
-                    TextField("Название задачи", text: $newTaskTitle, prompt: Text("Название задачи").foregroundColor(.white.opacity(0.5)))
-                        .foregroundColor(.white)
-                        .padding(10)
-                        .frame(maxWidth: .infinity) // Делаем ширину на всю доступную область
-                        .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
-                        .cornerRadius(8)
-                        .onChange(of: newTaskTitle) { oldValue, newValue in
-                            if newValue.count > 100 {
-                                newTaskTitle = String(newValue.prefix(100)) // Ограничение до 100 символов
+                    VStack(alignment: .leading, spacing: 4) {
+                        TextField("Название задачи", text: $newTaskTitle, prompt: Text("Название задачи").foregroundColor(.white.opacity(0.5)))
+                            .foregroundColor(.white)
+                            .padding(10)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
+                            .cornerRadius(8)
+                            .onChange(of: newTaskTitle) { _, newValue in
+                                if newValue.count > 100 {
+                                    newTaskTitle = String(newValue.prefix(100))
+                                }
+                                showError = newTaskTitle.isEmpty // Показываем или скрываем ошибку
                             }
+
+                        //  надпись "Обязательное поле"
+                        if showError {
+                            Text("Обязательное поле")
+                                .foregroundColor(.red)
+                                .font(.caption)
+                                .padding(.leading, 4)
                         }
+                    }
 
                     // Поле для описания задачи
                     TextField("Описание задачи", text: $newTaskDescription, prompt: Text("Описание задачи").foregroundColor(.white.opacity(0.5)))
@@ -34,7 +46,7 @@ struct AddTaskView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                         .cornerRadius(8)
-                        .onChange(of: newTaskDescription) { oldValue, newValue in
+                        .onChange(of: newTaskDescription) { _, newValue in
                             if newValue.count > 900 {
                                 newTaskDescription = String(newValue.prefix(900)) // Ограничение до 900 символов
                             }
@@ -50,12 +62,12 @@ struct AddTaskView: View {
                             .datePickerStyle(.wheel)
                             .labelsHidden()
                             .padding(10)
-                            .frame(maxWidth: .infinity) // Растягиваем по ширине
+                            .frame(maxWidth: .infinity)
                             .background(Color(red: 39 / 255, green: 39 / 255, blue: 41 / 255))
                             .cornerRadius(8)
                             .colorScheme(.dark)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading) // Выровняем по левому краю
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .listRowBackground(Color.black)
             }
@@ -78,8 +90,8 @@ struct AddTaskView: View {
                         )
                         presentationMode.wrappedValue.dismiss()
                     }
-                    .disabled(newTaskTitle.isEmpty)
-                    .foregroundColor(.white)
+                    .disabled(showError) // Блокируем кнопку, если есть ошибка
+                    .foregroundColor(showError ? .gray : .white) // Цвет кнопки зависит от showError
                 }
             }
             .tint(.white)

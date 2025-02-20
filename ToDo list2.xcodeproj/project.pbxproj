@@ -19,6 +19,7 @@
 		B7B487092D5ABAAA004569AC /* AddTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B487082D5ABAAA004569AC /* AddTaskView.swift */; };
 		B7B4870E2D5AC0C6004569AC /* TaskCoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B4870D2D5AC0C6004569AC /* TaskCoreDataManager.swift */; };
 		B7B487102D5BA62C004569AC /* EditTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B4870F2D5BA62C004569AC /* EditTaskView.swift */; };
+		B7F7DCB62D674A7600F7E519 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F7DCB52D674A7600F7E519 /* NetworkManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		B7B487082D5ABAAA004569AC /* AddTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskView.swift; sourceTree = "<group>"; };
 		B7B4870D2D5AC0C6004569AC /* TaskCoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCoreDataManager.swift; sourceTree = "<group>"; };
 		B7B4870F2D5BA62C004569AC /* EditTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTaskView.swift; sourceTree = "<group>"; };
+		B7F7DCB52D674A7600F7E519 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 			children = (
 				B7B4870D2D5AC0C6004569AC /* TaskCoreDataManager.swift */,
 				B774411C2D48C906007664D8 /* TaskListViewModel.swift */,
+				B7F7DCB52D674A7600F7E519 /* NetworkManager.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -189,6 +192,7 @@
 				B774410F2D48C370007664D8 /* Persistence.swift in Sources */,
 				B77441082D48C36E007664D8 /* ContentView.swift in Sources */,
 				B7B4870E2D5AC0C6004569AC /* TaskCoreDataManager.swift in Sources */,
+				B7F7DCB62D674A7600F7E519 /* NetworkManager.swift in Sources */,
 				B7B487092D5ABAAA004569AC /* AddTaskView.swift in Sources */,
 				B774411B2D48C8C7007664D8 /* Task.swift in Sources */,
 				B77441122D48C370007664D8 /* ToDo_list2.xcdatamodeld in Sources */,

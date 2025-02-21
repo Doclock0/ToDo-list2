@@ -6,6 +6,8 @@ struct ContentView: View {
     @State private var isAddTaskViewPresented = false
     @State private var selectedTaskForEditing: TaskEntity?
     @FocusState private var isSearchFieldFocused: Bool
+    @State private var errorMessage: String? = nil
+    @State private var showAlert = false
 
     var body: some View {
         NavigationStack {
@@ -41,6 +43,20 @@ struct ContentView: View {
             .onAppear {
                 // Убедимся, что фокус не активируется автоматически при открытии приложения
                 isSearchFieldFocused = false
+            }
+            .onReceive(viewModel.$showAlert) { showAlert in
+                self.showAlert = showAlert
+            }
+            .onReceive(viewModel.$errorMessage) { message in
+                self.errorMessage = message
+            }
+            .alert("Ошибка", isPresented: $showAlert, presenting: errorMessage) { message in
+                Button("OK", role: .cancel) {
+                    errorMessage = nil
+                    viewModel.showAlert = false
+                }
+            } message: { message in
+                Text(message)
             }
         }
     }

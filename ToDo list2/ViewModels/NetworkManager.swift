@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 class NetworkManager {
     static let shared = NetworkManager()
@@ -26,7 +27,7 @@ class NetworkManager {
                 // Преобразуем ошибку в APIError
                 if let apiError = error as? APIError {
                     return apiError
-                } else if let decodingError = error as? DecodingError {
+                } else if error is DecodingError {
                     return .decodingError
                 } else {
                     return .networkError

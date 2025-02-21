@@ -4,6 +4,8 @@ import SwiftUI
 import Combine
 
 class TaskListViewModel: ObservableObject {
+    @Published var errorMessage: String? = nil
+    @Published var showAlert = false
     @Published var tasks: [TaskEntity] = []
     @Published var filteredTasks: [TaskEntity] = []
     @Published var searchText: String = "" {
@@ -11,6 +13,7 @@ class TaskListViewModel: ObservableObject {
             updateSearchResults()
         }
     }
+    
     
     private let context: NSManagedObjectContext
     private let backgroundContext: NSManagedObjectContext
@@ -61,9 +64,10 @@ class TaskListViewModel: ObservableObject {
     // Получение данных из API и сохранение их в CoreData
     func fetchTasksFromAPI() {
         NetworkManager.shared.loadTasksFromAPI()
-            .sink(receiveCompletion: { completion in
+            .sink(receiveCompletion: { [weak self] completion in
                 if case .failure(let error) = completion {
-                    print("Ошибка сети: \(error.localizedDescription)")
+                    self?.errorMessage = error.localizedDescription
+                    self?.showAlert = true
                 }
             }, receiveValue: { [weak self] todos in
                 self?.saveTasksFromAPI(todos: todos)
